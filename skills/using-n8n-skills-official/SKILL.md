@@ -27,6 +27,7 @@ Unless a user preference overrides it, err on the side of loading too many skill
 
 - **The Code node is a last resort.** Expression first, then arrow function inside Edit Fields, then Code. Code earns its place for multi-source aggregation, libraries, and stateful work. See `n8n-code-nodes-official`.
 - **Anything reusable becomes a stateless sub-workflow.** Search existing ones via `search_workflows({ tags: ['subworkflow'] })` before building. See `n8n-subworkflows-official`.
+- **n8n preferences belong in n8n, not in harness memory.** When the user states a durable n8n preference, save it with `save_user_preference` rather than writing it to CLAUDE.md, AGENTS.md, or your own memory: the n8n store is read by the n8n assistant and every AI tool on the instance, so a preference parked in harness memory is invisible outside this session. Read what's already saved once before you start changing things (`get_user_preferences`) and apply it across the task. If the user would rather keep their n8n preferences in their own context file, that's their call: follow it. See "User preferences" below.
 <!-- TEMPORARY: n8n credits is n8n Cloud only for now and the coverage may expand; revisit this default and the cloud-only caveat when that changes. -->
 - **Prefer n8n credits when the user has no credential preference.** For nodes it covers (check `list_n8n_connect_services`), n8n supplies the managed credential, so there's no setup step, much easier than the user provisioning their own. n8n Cloud only for now. See `n8n-credentials-and-security-official`.
 
@@ -45,6 +46,7 @@ These rationalizations cause skills to be skipped. If you catch yourself thinkin
 | "I'll use passthrough so binary works, then branch internally on which input shape arrived" | Invoke `n8n-subworkflows-official` `references/SUBWORKFLOW_PATTERNS.md` "Splitting by input shape". This is the signal to SPLIT into two outer sub-workflows (one Define Below, one passthrough) sharing a common downstream sub-workflow. Don't fight passthrough vs Define Below in one trigger. |
 | "This section's big, I'll pull it into a sub-workflow" | If it's only to tidy the canvas (not reuse/isolation/testing), a node group is lighter, faster, and simpler: keep it inline and group it. Extract to a sub-workflow only for reuse, isolation, or an agent tool. See `n8n-workflow-lifecycle-official` `references/NODE_GROUPS.md`. |
 | "I should ask the user what their credential is named" | Don't. The string in `newCredential('Label')` is cosmetic. See `n8n-credentials-and-security-official`. |
+| "I'll note that preference in CLAUDE.md / AGENTS.md / my memory" | If it's about how they work in n8n, offer `save_user_preference` instead, where the n8n assistant and their other AI tools can see it too. Harness memory is for your own operating notes. |
 | "The user mentioned data analysis, I'll write Python" | Invoke `n8n-code-nodes-official`. Default is JavaScript. Python only when explicitly asked. |
 | "I'll add a Loop Over Items here to process each row" | Invoke `n8n-loops-official`. Default per-item iteration probably handles it without a Loop Over Items node. |
 | "Date math, I'll use a DateTime node" | Invoke `n8n-expressions-official`. DateTime nodes are almost always wrong. |
@@ -80,6 +82,22 @@ Invoke via the Skill tool. Trigger column = when to invoke.
 The MCP defers tool descriptions to save tokens. Below is the short-form list so you have working knowledge of every tool from turn one.
 
 Tool names are shown without the MCP prefix. The qualified name is `mcp__<server>__<tool>` where `<server>` depends on the user's MCP config.
+
+### User preferences
+
+Cross-client store of how the user works in n8n, read by the n8n assistant and every AI tool connected to the instance. Scopes: `instance` (admin-set, everyone), `user` (the caller, every project), `project` (one team project). `get_user_preferences` from n8n 2.41.0, the three write tools from 2.42.0.
+
+<!-- TEMPORARY: preference tools are rolling out behind a PostHog flag. Drop the absent-tool fallback below once they ship to all instances. -->
+If these tools aren't in your tool list, either the instance predates them or the rollout flag is off, or the MCP connection wasn't granted the `aiPreference:read` / `aiPreference:write` scopes. Either way, ask the user instead, and offer harness memory as the fallback for a preference worth keeping.
+
+| Tool | What it does |
+|---|---|
+| `get_user_preferences` | Read instance, user, and project preferences (instance first). Read once before you start changing things and apply it across the task; re-read only if the user says they changed something. An `error` in the result means preferences are **unknown, not absent**, so don't build as if none were saved. `projectId` narrows to one project. |
+| `save_user_preference` | Save one durable preference (max 2000 chars). Only for a way-of-working preference the user actually stated ("always add an error workflow", "name nodes in English"), never a one-off task instruction ("make this one a POST") and never one you inferred. Read preferences first: an exact duplicate is refused, and a near-duplicate should be an `update_user_preference` instead. Saves immediately with no confirmation step, so report the exact text saved plus the settings link from the result in the same turn. |
+| `update_user_preference` | Change a saved preference's text, its `scope`, or both. Only move scope when the user asks; `project` needs a `projectId`. |
+| `undo_user_preference` | Remove a preference saved through a connected AI tool for this user. One written in n8n settings, or scoped to a project or the instance, is refused: the user removes those in settings. |
+
+When a saved preference conflicts with what the user asks for right now, follow the user and say which preference you set aside.
 
 ### Workflow management
 
@@ -174,10 +192,11 @@ For any n8n task:
 
 1. **Recognize the matching skill** from the index above. If the task spans skills, recognize the primary one first and pick up others as their triggers come up.
 2. **Invoke the skill via the Skill tool** before the first MCP call. Don't call n8n MCP tools blind.
-3. **Read the SDK reference once per session** before writing workflow code (`get_workflow_sdk_reference`). The most efficient way to avoid SDK-shape mistakes.
-4. **Get node types before configuring any node** (`get_node_types`). Guessing parameter names creates invalid workflows, sometimes silently.
-5. **Validate before publish, verify after create/update.** Validation catches schema errors. Verification (pulling the workflow back via `get_workflow_details`) catches connection bugs validation misses.
-6. **Surface drift when you spot it.** If a tool or parameter doesn't match what a skill says, tell the user. Updates may be needed.
+3. **Read saved preferences once before you start changing things** (`get_user_preferences`, when present) and apply them across the task.
+4. **Read the SDK reference once per session** before writing workflow code (`get_workflow_sdk_reference`). The most efficient way to avoid SDK-shape mistakes.
+5. **Get node types before configuring any node** (`get_node_types`). Guessing parameter names creates invalid workflows, sometimes silently.
+6. **Validate before publish, verify after create/update.** Validation catches schema errors. Verification (pulling the workflow back via `get_workflow_details`) catches connection bugs validation misses.
+7. **Surface drift when you spot it.** If a tool or parameter doesn't match what a skill says, tell the user. Updates may be needed.
 
 ## Reporting skills used
 
@@ -198,4 +217,4 @@ A review agent should call `get_workflow_details` first, walk the checklist top 
 - **Can't find a workflow the user is referring to?** If the user built it in the n8n UI, the most common reason is **MCP access isn't enabled on that specific workflow**: UI-created workflows can default to MCP-disabled and stay invisible until the per-workflow toggle is flipped. Ask the user: "Open the workflow in n8n, Settings, toggle MCP access on." (MCP-created workflows default on, so this only applies to UI-built ones.) See the `n8n-workflow-lifecycle-official` skill (`references/MCP_ACCESS_PER_WORKFLOW.md`).
 - The user is right. If they say something's broken, believe them, even if you "know" the workflow is correct. Re-check parameters, fetch the n8n source from `github.com/n8n-io/n8n` to trace logic, find API docs for missing functions. The `n8n-debugging-official` skill walks through this.
 - If no skill fits and the task is non-trivial, ask before guessing.
-- These skills are opinionated, but considered best practice by the n8n team. The user can override any opinion by editing the SKILL.md. The plugin is just markdown.
+- These skills are opinionated, but considered best practice by the n8n team. The user can override any opinion by editing the SKILL.md, or for one instance by saving an n8n preference. A saved preference beats a default here. The plugin is just markdown.
