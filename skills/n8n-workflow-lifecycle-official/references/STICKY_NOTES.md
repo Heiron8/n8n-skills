@@ -10,7 +10,7 @@ Read before placing or editing one. The two entry points take different shapes, 
 ## On create: anchor, never position
 
 ```ts
-const note = sticky('## Enrich order\nLooks up the customer in Postgres before pricing.', [lookup, price], { color: 5 });
+const note = sticky('### Enrich order\nCustomer lookup feeds the tier multiplier used by pricing.', [lookup, price], { color: 5 });
 workflow('id', 'name').add(lookup.to(price)).add(note);
 ```
 
@@ -29,7 +29,9 @@ snapped to the 16px grid. The 64px of headroom on top is where the title renders
 
 Anchors are recorded by node **id**, so renaming a member afterward is safe.
 
-A hand-positioned sticky is guessing: coordinates are fixed before layout runs, so they describe a canvas that does not exist yet. Anchor instead, and only set `position` for a note that belongs to no particular node (a title banner, a workflow-level TODO).
+**Every sticky gets anchors. There is no good unanchored note on create.** A hand-written `position` is guessing, because coordinates are fixed before layout runs and describe a canvas that does not exist yet. Leaving both out is worse: the fallback centers the note under the entire graph (pre-layout every node sits at the origin, so an unanchored note counts as covering all of them) and then pushes it down past any sticky it lands on. The result is a note floating below the flow with no relationship to anything, which is the single most common way a canvas ends up looking wrong.
+
+If you cannot name the nodes a note is about, it does not belong on the canvas.
 
 ## The four rules that still produce a mess
 
@@ -54,11 +56,18 @@ A hand-positioned sticky is guessing: coordinates are fixed before layout runs, 
 
 To frame a run of nodes the way create does, read their positions from `get_workflow_details` and build the same box by hand: left edge minus 32, top minus 96, width plus 64, height plus 128, every value rounded to a multiple of 16.
 
-## Content
+## Content, and where the overflow goes
 
-`### Title` on the first line, then the body. The title carries the point of the callout, not the names of the nodes under it: a reader can already see `Set, If, Set`.
+`### Title` on the first line, then one short line. The title carries the point of the callout, not the names of the nodes under it: a reader can already see `Set, If, Set`.
 
-**How much body depends on whether the note is anchored.** Text renders from the note's top-left, and on an anchored note only the top 64px is clear: anything past a title and one short line renders *behind* the nodes, where nobody reads it. So anchor a zone with a title plus one line, and when a stage genuinely needs a paragraph, put that in a free-floating note beside it, sized to its text.
+**One line is the whole budget.** Text renders from the note's top-left and only the top 64px clears the anchors, so anything longer renders *behind* the nodes where nobody reads it. The budget is not negotiable by making the note bigger, because a taller box just extends further behind the nodes.
+
+So prose that does not fit goes somewhere else, and n8n has two better places for it:
+
+- **Node `notes`** for why one node is configured the way it is. This is the right home for a retry policy, a rate limit, or a workaround.
+- **The workflow `description`** for why the workflow exists at all.
+
+Neither competes for canvas space, and both survive a reader who never scrolls left.
 
 ## Color
 
