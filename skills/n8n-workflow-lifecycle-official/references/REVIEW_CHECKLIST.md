@@ -56,7 +56,7 @@ Before walking the per-domain list:
 
 ### First-class n8n Agents
 
-Review an Agent with `get_agent` (draft) and `get_agent` with `activeVersionId` (live). Findings are in config JSON terms.
+Review an Agent with `get_agent` (draft) and `get_agent` with `versionId` set to its published `activeVersionId` (live). Findings are in config JSON terms.
 
 - [ ] **No `memory` block on a conversational Agent.** It forgets the previous turn even inside one session. Add `{ "enabled": true, "storage": "n8n" }`. → [MEMORY.md](../../n8n-agents-official/references/MEMORY.md)
 - [ ] **Saved sub-agent unpublished while the parent is published.** Production delegation fails and the parent answers without it. Nothing else flags this. → [SUB_AGENTS.md](../../n8n-agents-official/references/SUB_AGENTS.md)

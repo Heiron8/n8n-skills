@@ -27,7 +27,7 @@ In publish, unpublish, and revert responses, `activeVersionId` is the live versi
 
 ## `mutate_agent` operations
 
-Fields sit directly on the operation object, with no `value` wrapper.
+Every call takes top-level `agentId`, `baseConfigHash` (the latest `configHash`), and one `operation`. Fields sit directly on the operation object, with no `value` wrapper.
 
 | Operation | Fields | Notes |
 |---|---|---|

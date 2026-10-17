@@ -28,8 +28,8 @@ Unless a user preference overrides it, err on the side of loading too many skill
 - **The Code node is a last resort.** Expression first, then arrow function inside Edit Fields, then Code. Code earns its place for multi-source aggregation, libraries, and stateful work. See `n8n-code-nodes-official`.
 - **Anything reusable becomes a stateless sub-workflow.** Search existing ones via `search_workflows({ tags: ['subworkflow'] })` before building. See `n8n-subworkflows-official`.
 - **n8n preferences belong in n8n, not in harness memory.** When the user states a durable n8n preference, save it with `save_user_preference` rather than writing it to CLAUDE.md, AGENTS.md, or your own memory: the n8n store is read by the n8n assistant and every AI tool on the instance, so a preference parked in harness memory is invisible outside this session. Read what's already saved once before you start changing things (`get_user_preferences`) and apply it across the task. If the user would rather keep their n8n preferences in their own context file, that's their call: follow it. See "User preferences" below.
-<!-- TEMPORARY: n8n credits is n8n Cloud only for now and the coverage may expand; revisit this default and the cloud-only caveat when that changes. -->
-- **Prefer n8n credits when the user has no credential preference.** For nodes it covers (check `list_n8n_gateway_services`), n8n supplies the managed credential, so there's no setup step, much easier than the user provisioning their own. n8n Cloud only for now. See `n8n-credentials-and-security-official`.
+<!-- TEMPORARY: Gateway credits is n8n Cloud only for now and the coverage may expand; revisit this default and the cloud-only caveat when that changes. -->
+- **Prefer Gateway credits when the user has no credential preference.** For nodes it covers (check `list_n8n_gateway_services`), n8n supplies the managed credential, so there's no setup step, much easier than the user provisioning their own. n8n Cloud only for now. See `n8n-credentials-and-security-official`.
 
 ## Red flags: thoughts that mean STOP and invoke
 
@@ -132,7 +132,7 @@ When a saved preference conflicts with what the user asks for right now, follow 
 | `validate_node_config` | Schema-only validation of node configs (1-50 per call). Per-parameter errors, no graph noise. Side-channel for iteration/debug; `validate_workflow` still gates publish. For ai_tool subnodes set `isToolNode: true`. |
 | `validate_workflow` | Validate full SDK code before create/update. Necessary but **not sufficient**: doesn't catch all wiring traps (`.to()`, merge index). |
 | `list_credentials` | List accessible credentials (filter by type/project/etc). Returns metadata only, **never secret values**. Discover IDs before binding via `setNodeCredential`. |
-| `list_n8n_gateway_services` | List node/credential types the platform can supply managed credentials for (n8n credits coverage), so the user can skip credential setup for them. |
+| `list_n8n_gateway_services` | List node/credential types the platform can supply managed credentials for (Gateway credits coverage), so the user can skip credential setup for them. |
 
 ### Workflow testing & execution
 

@@ -18,7 +18,7 @@ Default to native. Pick the shell when one of the right-hand rows is a requireme
 
 - **Channels always run the published version.** Test in Preview first.
 - **Channels aren't versioned.** On an unpublished Agent a configured channel stays inactive until `publish_agent`. On a published Agent, connecting goes live immediately, so confirm with the user first.
-- Manage them only with `update_agent_integration` (`action: connect` or `disconnect`, `type`, `credentialId`, `settings`). `replacesCredentialId` swaps a credential in one call.
+- Manage them with `update_agent_integration` (Discord may need the UI, below) (`action: connect` or `disconnect`, `type`, `credentialId`, `settings`). `replacesCredentialId` swaps a credential in one call.
 - The Agent answers new @mentions and DMs, then follows the rest of that thread without needing another mention.
 - `/new` starts a fresh session. An idle timeout ("New session after inactivity", `sessionIdleTimeoutMinutes` where the settings schema has it) does it automatically.
 - Each channel adds `<type>_context` and `<type>_action` tools, so instructions can say "DM the requester when done" and tasks can post proactively.

@@ -53,7 +53,7 @@ Decide before calling any build tool. The first question is the "say it out loud
 3. `create_agent` with model, credential, instructions, memory block, and ordinary tools. Skills, tasks, and custom tools come after, through `mutate_agent`, because they need server-generated ids.
 4. `mutate_agent`, one operation per call. `skill.upsert` doesn't change `configHash`; config patches do.
 5. `validate_agent` until `valid: true` and `missing` is empty.
-6. One representative `call_agent`. It runs the draft through Preview with real tools, so side effects happen. Every returned approval goes to the human; resume each with its `continuation`.
+6. One representative `call_agent`. It runs the draft through Preview with real tools, so side effects happen: if any tool without approval sends, writes, or pays, ask the user before the test. Every returned approval goes to the human; resume each with its `continuation`.
 7. Report the draft with the `url` from `validate_agent`, plus the session link (see `references/SESSIONS_AND_DEBUGGING.md`), and ask whether to publish.
 8. `publish_agent` only on an explicit yes. Channels: `update_agent_integration` (`references/CHANNELS.md`).
 
@@ -76,7 +76,7 @@ Details on every operation, error code, and version tool: `references/MCP_BUILD.
 | `references/MESSAGE_AN_AGENT.md` | Calling an Agent from a workflow |
 | `references/SESSIONS_AND_DEBUGGING.md` | Anything went wrong, or the user asks where to see what the Agent did |
 
-For a chat bot built as a workflow shell (platforms without a native channel, slash commands, custom routing), the shell patterns live in `n8n-ai-nodes-official` `references/CHAT_SURFACE_PATTERNS.md`, section "Core as Message an Agent". Its one rule that can't wait: a shell that posts replies must filter out the bot's own user ID right after the trigger, or it triggers itself forever.
+For a chat bot built as a workflow shell (platforms without a native channel, slash commands, custom routing), the shell patterns live in `n8n-ai-nodes-official` `references/CHAT_SURFACE_PATTERNS.md`, section "Core as Message an Agent". Its one rule that can't wait: on surfaces that deliver the bot's own messages (Slack, Discord), a shell that posts replies must filter out the bot's user ID right after the trigger, or it triggers itself forever.
 
 ## Writing instructions
 

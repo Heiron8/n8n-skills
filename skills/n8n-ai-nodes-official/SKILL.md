@@ -11,7 +11,7 @@ The AI Agent node (`@n8n/n8n-nodes-langchain.agent`) is a multi-turn LLM driver 
 
 "Build me an agent" means a first-class n8n Agent (`n8n-agents-official`) by default. Use the node when the workflow owns the control flow and AI is one bounded step, or when the first-class Agent hits a limit:
 
-<!-- TEMPORARY: revisit each limit below when n8n adds tool access to run data or sessions shared between channels and workflows. -->
+<!-- TEMPORARY: revisit each limit below when n8n adds tool access to run data, sessions shared between channels and workflows, or Agents on every instance (Enterprise). -->
 | Need | Why the node wins today |
 |---|---|
 | Trigger or upstream data mapped exactly into a tool parameter | Agent tool expressions only see the model's own arguments. Node tools can use `$('Webhook').item.json...` |

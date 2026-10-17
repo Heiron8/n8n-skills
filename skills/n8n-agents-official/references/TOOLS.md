@@ -93,7 +93,7 @@ export default new Tool('get_current_datetime')
     .handler(async () => new Date().toISOString());
 ```
 
-Created with `mutate_agent` `customTool.upsert` (`code`), referenced as `{ "type": "custom", "id": "get_current_datetime" }`. Only `@n8n/agents` and `zod` import. Runs in a sandbox: no credentials, so anything that calls an authenticated API belongs in a node or workflow tool.
+Created with `mutate_agent` `customTool.upsert` (`code`), which also attaches it as `{ "type": "custom", "id": "get_current_datetime" }` (the id is the `Tool` name). Only `@n8n/agents` and `zod` import. Runs in a sandbox: no credentials, so anything that calls an authenticated API belongs in a node or workflow tool.
 
 ## Built-in tools
 

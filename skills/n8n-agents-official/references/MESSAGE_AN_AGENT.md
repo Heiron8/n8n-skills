@@ -55,7 +55,7 @@ Verified live:
 
 All verified live unless marked.
 
-- **Draft or published:** manual executions run the Agent's draft (chat-trigger test runs too, per source); production executions run the published version, so publish the Agent before the workflow goes live.
+- **Draft or published:** manual executions run the Agent's draft (chat-trigger test runs too; read from n8n source, not tested live); production executions run the published version, so publish the Agent before the workflow goes live.
 - **Session keys are project-wide, not per Agent.** A key belongs to the first Agent that uses it. The same Agent with the same key from any workflow continues the session; a different Agent with that key fails with "Failed to create the agent execution record". So a bare user id (Telegram id, email) can key one Agent only: prefix per Agent (`support-<telegramId>`, `billing-<telegramId>`). Max 74 characters. No key = a one-off session.
 <!-- TEMPORARY: sessions can't be shared between native channel conversations (Slack, Telegram, Discord, Linear, n8n Chat) and Message an Agent calls from workflows. Revisit if n8n adds a way to key into a native session from a workflow, or vice versa. -->
 - **Never the same session as a native channel**, even for the same Agent and the same platform thread (`MEMORY.md`).
