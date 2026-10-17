@@ -56,7 +56,9 @@ To frame a run of nodes the way create does, read their positions from `get_work
 
 ## Content
 
-`### Title` on the first line, then 1 to 3 sentences. The title carries the point of the callout, not the names of the nodes under it: a reader can already see `Set, If, Set`. Markdown renders, so a short list or a `code` span is fine; a wall of prose is not, because the note is read at a glance over the canvas.
+`### Title` on the first line, then the body. The title carries the point of the callout, not the names of the nodes under it: a reader can already see `Set, If, Set`.
+
+**How much body depends on whether the note is anchored.** Text renders from the note's top-left, and on an anchored note only the top 64px is clear: anything past a title and one short line renders *behind* the nodes, where nobody reads it. So anchor a zone with a title plus one line, and when a stage genuinely needs a paragraph, put that in a free-floating note beside it, sized to its text.
 
 ## Color
 

@@ -86,7 +86,7 @@ For any workflow over ~5 nodes, four levers carry the readability load:
 - **Sticky notes: annotate, don't group.** Grouping is the node group's job (above). Stickies carry what a group name can't: a callout on a tricky section, a TODO, a warning, a note on the trigger. **Read `references/STICKY_NOTES.md` before placing one**, because the two tools work differently:
     - **On create, anchor instead of positioning.** SDK `sticky(content, [nodes], { color })` derives the box from the nodes it wraps, after layout, and renders as a background zone. Hand-written coordinates are guessing at a canvas that doesn't exist yet.
     - **`update_workflow` has no sticky op.** There a sticky is an `addNode` of `n8n-nodes-base.stickyNote` with `content`, `width`, `height`, and `color` in `parameters`, and an omitted `position` means `[0, 0]`.
-    - **Content and color:** `### Title` on the first line carrying the point (not the node names below it), 1-3 sentences of body, and an integer `color` 1-7 used one meaning per color (1 yellow, 3 red, 4 green, 5 blue, 7 gray). Color that varies per note instead of per role is noise.
+    - **Content and color:** `### Title` on the first line carrying the point (not the node names below it), then a body sized to the space. An anchored note only has its top 64px clear of the nodes, so give it the title and one line and park a real paragraph in a free-floating note beside the stage. `color` is an integer 1-7, one meaning per color (1 yellow, 3 red, 4 green, 5 blue, 7 gray); color that varies per note instead of per role is noise.
 - **Node `notes` for non-obvious config.** Explain *why* a workaround exists or a Code node does what it does. Don't annotate obvious nodes.
 
 Plus two notes:
