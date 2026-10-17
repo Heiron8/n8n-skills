@@ -33,11 +33,12 @@ Anchors are recorded by node **id**, so renaming a member afterward is safe.
 
 If you cannot name the nodes a note is about, it does not belong on the canvas.
 
-## The four rules that still produce a mess
+## The rules that still produce a mess
 
 - **Declared size wins dimension by dimension.** `{ width: 400 }` on an anchored note keeps your width and takes the derived height. Give both and anchoring only positions it. Give neither and it is fully derived, which is almost always what you want.
 - **A pinned note is never moved, including out of another note's way.** Pinned means it has an explicit `position` *or* anchors. Only free-floating notes get de-overlapped, and that pass pushes them **down past other stickies only**, never past nodes. So a free-floating note can land on top of nodes, and two anchored notes whose anchor sets interleave overlap forever. Anchor each note to a disjoint run.
 - **Stickies are invisible to layout.** Nodes are never spread apart to make room for a note.
+- **Two zones cannot sit on vertically adjacent rows.** A zone reaches 32px below its anchors and 96px above them, so stacked zones need **128px of clear space between the node boxes**. Dagre stacks sibling branches `NODE_Y_SPACING` apart, which is 96. So giving each branch of an If or Switch its own zone overlaps by exactly 32px, every time, and both are pinned so neither yields. Anchor the whole fan as one zone, or zone one branch and leave the other bare.
 - **Anchor whole stages, not single nodes.** One note per group or stage. A note per node reproduces the node names in a second typeface and buries the one callout that mattered.
 
 ## On update: there is no sticky operation
