@@ -37,7 +37,7 @@ In SDK code, declare a group with `.group(name, members, options?)` on the workf
 
 ## Failure modes: groups never fail the save
 
-Group ops are the **one exception** to `update_workflow` being atomic: an invalid group op is skipped and the rest of the batch still saves. So a call that looks successful can still have lost a group, and the fields that say so differ by tool.
+Group ops are the **one exception** to `update_workflow` being atomic: an invalid group op is skipped and the rest of the batch still saves. (An over-long description is the one thing that still fails the whole call: see Descriptions.) So a call that looks successful can still have lost a group, and the fields that say so differ by tool.
 
 **`update_workflow`:**
 

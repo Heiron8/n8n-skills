@@ -42,7 +42,7 @@ About to write a chunk of logic?
     └── Don't extract. Extra workflow boundary for nothing.
 ```
 
-When the only motivation is a cleaner canvas (not reuse, isolation, testability, or an agent tool), a **canvas node group** is the tool for readability-only sectioning: faster (no sub-execution per call) and simpler (no input/output contract), with the logic staying inline. Group it where the section is connected, trigger-free, and faces outward at one member in and one out (`n8n-workflow-lifecycle-official` `references/NODE_GROUPS.md`); split a too-branchy section into smaller valid slices rather than leaving the whole stage ungrouped (a sticky note annotates, it doesn't group). Extract to a sub-workflow only when you genuinely need reuse, isolation, independent testing, or an agent tool. See `n8n-workflow-lifecycle-official` Readability.
+When the only motivation is a cleaner canvas (not reuse, isolation, testability, or an agent tool), a **canvas node group** is the tool for readability-only sectioning: faster (no sub-execution per call) and simpler (no input/output contract), with the logic staying inline. Group it where the section is connected, trigger-free, and faces outward at no more than one member in each direction (`n8n-workflow-lifecycle-official` `references/NODE_GROUPS.md`); split a too-branchy section into smaller valid slices rather than leaving the whole stage ungrouped (a sticky note annotates, it doesn't group). Extract to a sub-workflow only when you genuinely need reuse, isolation, independent testing, or an agent tool. See `n8n-workflow-lifecycle-official` Readability.
 
 ## Stateless vs. stateful sub-workflows
 

@@ -76,13 +76,13 @@ For full conventions (verb-noun patterns, capitalization, prefixes), read `refer
 
 ## Readability: descriptions, node groups, sticky notes, conventions
 
-Four levers carry the readability load, the first three from about 5 nodes on and grouping from 7 boxes on:
+Four levers carry the readability load, grouping from 7 boxes on and the other three from about 5 nodes on:
 
 - **Workflow `description`: capture the *why*, including AI-derived context.** Two sentences: what it does and why it exists. Most importantly, capture context you had during conversation that won't otherwise survive into the file (the constraint that drove the design, why this approach over the alternative, the user's reason for asking). Otherwise it dies with the chat.
 - **Node groups: the only way to group nodes.** Named frames, one per logical step (`Validate input`, `Enrich order`, `Notify`). Organization only, members run inline (reuse/isolation is a sub-workflow's job). **Read `references/NODE_GROUPS.md` before creating or editing any group**, and after any save that reported a group problem. The three things to know up front:
     - **When:** more than **7 boxes** with every group collapsed, typically into 3-5 groups. A box is the trigger, each group, and each ungrouped node; sub-nodes and sticky notes don't count.
-    - **A group must be a connected, trigger-free section facing outward at one member in and one out**, with an Agent's sub-nodes all in or all out. Members are node **names**, not ids.
-    - **Groups never fail the save.** An invalid group op is skipped, not fatal, and unrelated edits can silently delete a valid existing group. Read the group fields on every create and update, and repair before reporting done.
+    - **A group must be a connected, trigger-free section with at most one member facing out in each direction**, with an Agent's sub-nodes all in or all out. Members are node **names**, not ids.
+    - **An invalid group op is skipped, not fatal**, and unrelated edits can silently delete a valid existing group, so a save that looks clean can have lost one. The exception is a description over 145 characters: that rejects the whole `update_workflow` call. Read the group fields on every create and update, and repair before reporting done.
 
 - **Sticky notes: annotate, don't group.** Grouping is the node group's job (above). Sticky notes are a follow-up layer for context a group can't carry: a callout on a tricky section, a TODO, a warning, a note on the trigger. Use the `n8n-nodes-base.stickyNote` node with markdown `content` (`### Title` on the first line, 1-3 sentences of body) and an integer `color` 1-7. Pick a small palette and stick to it (e.g. gray/yellow for notes, red for warnings, pink for TODOs); random colors communicate nothing.
 - **Node `notes` for non-obvious config.** Explain *why* a workaround exists or a Code node does what it does. Don't annotate obvious nodes.
