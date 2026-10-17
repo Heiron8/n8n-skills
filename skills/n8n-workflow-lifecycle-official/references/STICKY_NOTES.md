@@ -80,7 +80,14 @@ Fix the bottom by declaring a height, which keeps the derived width and the deri
 
 Each extra row adds 192 to both. The one node taller than 96 is Message an Agent v2 and up, at 128, which raises both numbers by 32.
 
-The sides cannot be fixed the same way, because a declared width keeps the left edge and grows only to the right, eating the gutter to the next zone. If a canvas is worth polishing, widen the zones in a second pass: read the boxes back with `get_workflow_details`, then one `update_workflow` call moving each zone 24px left and adding 48 to its width. That takes the side padding to 56 and leaves a 16px gutter. **56 is the ceiling**, not a preference: the subtitle overhangs the node box by about 45px each side, and dagre's column pitch leaves only 128px between node boxes to split between two paddings and a gutter.
+The sides cannot be fixed the same way, because a declared width keeps the left edge and grows only to the right, eating the gutter into the next zone. They need a second pass, and **that pass is part of building a canvas with zone stickies, not an optional polish.** Creating the workflow is step one of two:
+
+1. `create_workflow_from_code`, with every zone anchored and carrying its declared height.
+2. `get_workflow_details` to read the zone boxes back, then **one** `update_workflow` call that, for every zone, does a `setNodePosition` to `x - 24` and an `updateNodeParameters` setting `width + 48`.
+
+That takes the side padding from 32 to 56 and leaves a 16px gutter. Batch all the zones into the single call: the ops are atomic together and it costs one round trip for the whole canvas.
+
+**56 is the ceiling**, not a preference: a node's subtitle overhangs its box by about 45px each side, and dagre's column pitch leaves only 128px between node boxes to split between two paddings and a gutter. Stop there.
 
 ## The rules that still produce a mess
 
