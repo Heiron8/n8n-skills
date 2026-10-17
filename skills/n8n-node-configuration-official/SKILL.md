@@ -99,7 +99,7 @@ Per-category gotchas. Read the file for the node type you're configuring:
 | `references/WEBHOOK_NODES.md` | Configuring Webhook trigger or Respond to Webhook: body parsing, response shape, async patterns |
 | `references/COMMS_NODES.md` | Slack, Gmail, Discord, email: credential types, message shapes, attachments |
 | `references/DATABASE_NODES.md` | Postgres, MySQL, Mongo, Supabase: query vs operation, parameter binding, error handling |
-| `references/AI_NODES.md` | AI Agent node config knobs: streaming, vision, `maxIterations`, retries on the model sub-node. Defers design (prompts, tools, memory, structured output) to `n8n-agents-official` |
+| `references/AI_NODES.md` | AI Agent node config knobs: streaming, vision, `maxIterations`, retries on the model sub-node. Defers design (prompts, tools, memory, structured output) to `n8n-ai-nodes-official` |
 | `references/TRIGGER_NODES.md` | Webhook, Schedule, Manual, Execute Workflow Trigger: input schemas, polling vs realtime |
 | `references/SWITCH_FALLBACK.md` | Configuring a Switch node: unnamed outputs / missing fallback silently drop unmatched items |
 | `references/MERGE_NODE.md` | Configuring a Merge node, or you see `useDataOfInput`, `numberOfInputs`, or branches converging |

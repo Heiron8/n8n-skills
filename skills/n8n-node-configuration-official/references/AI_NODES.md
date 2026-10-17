@@ -1,19 +1,19 @@
 # AI Agent node: configuration gotchas
 
-The AI Agent node (`@n8n/n8n-nodes-langchain.agent`) is the load-bearing node for AI features in n8n. **For design depth, read the `n8n-agents-official` skill first.** This file only covers Agent-node-configuration knobs and runtime gotchas not in that skill.
+The AI Agent node (`@n8n/n8n-nodes-langchain.agent`) is the load-bearing node for AI features in n8n. **For design depth, read the `n8n-ai-nodes-official` skill first.** This file only covers Agent-node-configuration knobs and runtime gotchas not in that skill.
 
 | For | Read |
 |---|---|
-| When to use Agent vs other AI nodes | `n8n-agents-official` SKILL.md |
-| Sub-node pattern (model, memory, tools, outputParser) | `n8n-agents-official` SKILL.md |
-| System prompt design | `n8n-agents-official` `SYSTEM_PROMPT.md` |
-| Tool design and the four tool types | `n8n-agents-official` `TOOLS.md` |
-| Sub-workflow as tool | `n8n-agents-official` `SUBWORKFLOW_AS_TOOL.md` |
-| Memory backend choice and sessionId | `n8n-agents-official` `MEMORY.md` |
-| Structured output: parser + autoFix | `n8n-agents-official` `STRUCTURED_OUTPUT.md` |
-| Human review on tools | `n8n-agents-official` `HUMAN_REVIEW.md` |
-| Slack / Discord / Teams / Telegram surfaces | `n8n-agents-official` `CHAT_AGENT_PATTERNS.md` |
-| RAG primitives | `n8n-agents-official` `RAG.md` |
+| When to use Agent vs other AI nodes | `n8n-ai-nodes-official` SKILL.md |
+| Sub-node pattern (model, memory, tools, outputParser) | `n8n-ai-nodes-official` SKILL.md |
+| System prompt design | `n8n-ai-nodes-official` `SYSTEM_PROMPT.md` |
+| Tool design and the four tool types | `n8n-ai-nodes-official` `TOOLS.md` |
+| Sub-workflow as tool | `n8n-ai-nodes-official` `SUBWORKFLOW_AS_TOOL.md` |
+| Memory backend choice and sessionId | `n8n-ai-nodes-official` `MEMORY.md` |
+| Structured output: parser + autoFix | `n8n-ai-nodes-official` `STRUCTURED_OUTPUT.md` |
+| Human review on tools | `n8n-ai-nodes-official` `HUMAN_REVIEW.md` |
+| Slack / Discord / Teams / Telegram surfaces | `n8n-ai-nodes-official` `CHAT_SURFACE_PATTERNS.md` |
+| RAG primitives | `n8n-ai-nodes-official` `RAG.md` |
 | Binary in agent tools | `n8n-binary-and-data-official` `AGENT_TOOL_BINARY.md` |
 
 ## Always inspect the node first

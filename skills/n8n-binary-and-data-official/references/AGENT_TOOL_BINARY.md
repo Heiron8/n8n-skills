@@ -7,6 +7,8 @@ Binary doesn't survive the agent tool boundary in either direction. Agent and to
 
 Same workaround shape: **stage binary in storage, pass a key/URL through the JSON boundary, fetch on the other side.**
 
+The same boundary holds for first-class n8n Agents (`n8n-agents-official`): workflow tool inputs and results are JSON. What differs is the inbound side (from n8n source, not tested live): files sent to the Agent in chat reach the model directly, and on Telegram `get_current_message_context` returns the photo's `chat_id` and `file_id`, so a workflow tool can take those ids and fetch the file itself.
+
 ## Inbound: passing user-uploaded binary into a tool
 
 User pastes an image into chat. The chat trigger gives you a `files[]` array on the input. The agent itself can be configured with `passthroughBinaryImages: true` to let the LLM **see** the image (vision), but **the tools cannot.** Tool parameters are filled by `fromAi()` and `fromAi()` only handles strings/numbers/booleans/objects, not binary.

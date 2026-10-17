@@ -54,9 +54,20 @@ Before walking the per-domain list:
 
 - [ ] **`Execute Workflow Trigger` set to `passthrough` when it shouldn't be.** Passthrough loses the typed-input contract that agent tools (`fromAi()`) and structured callers need. Only correct when (a) the sub-workflow specifically receives binary AND isn't an agent tool, or (b) the sub-workflow takes no inputs (Define Below requires at least one field). For (b), the body should open with a `Set` ("Keep Only Set", no fields) and the trigger should carry a sticky noting no inputs are expected. → [n8n-subworkflows-official non-negotiables](../../n8n-subworkflows-official/SKILL.md) and [SUBWORKFLOW_PATTERNS.md "Splitting by input shape"](../../n8n-subworkflows-official/references/SUBWORKFLOW_PATTERNS.md)
 
+### First-class n8n Agents
+
+Review an Agent with `get_agent` (draft) and `get_agent` with `versionId` set to its published `activeVersionId` (live). Findings are in config JSON terms.
+
+- [ ] **No `memory` block on a conversational Agent.** It forgets the previous turn even inside one session. Add `{ "enabled": true, "storage": "n8n" }`. → [MEMORY.md](../../n8n-agents-official/references/MEMORY.md)
+- [ ] **Saved sub-agent unpublished while the parent is published.** Production delegation fails and the parent answers without it. Nothing else flags this. → [SUB_AGENTS.md](../../n8n-agents-official/references/SUB_AGENTS.md)
+- [ ] **Tool that sends, pays, deletes, or changes data without `requireApproval`** (or MCP `approval`). → [APPROVALS.md](../../n8n-agents-official/references/APPROVALS.md)
+- [ ] **Approval-required tool on an Agent that runs from Message an Agent or a scheduled task.** Fails, or parks with no one to answer. → [APPROVALS.md](../../n8n-agents-official/references/APPROVALS.md)
+- [ ] **Telegram channel with `accessMode: public`** when the Agent isn't meant for strangers. Anyone can talk to it and spend its budget. → [CHANNELS.md](../../n8n-agents-official/references/CHANNELS.md)
+- [ ] **Two different Agents called with the same Message an Agent session key** in one project (for example both keyed on a bare Telegram id). Keys are project-wide, not per Agent, so the second Agent's call fails with "Failed to create the agent execution record". Prefix keys per Agent. → [MESSAGE_AN_AGENT.md](../../n8n-agents-official/references/MESSAGE_AN_AGENT.md)
+
 ### Chat-triggered agents (Slack / Discord / Teams / Telegram)
 
-- [ ] **Bot's own user ID not filtered out**, either via the trigger's own filter option (preferred: Slack's `options.userIds` exclusion list) or as the first node after the trigger. The bot's reply re-triggers the workflow → infinite loop. Watch out for surface-specific semantics: Telegram's `userIds` is an allowlist, not an exclusion list. → [CHAT_AGENT_PATTERNS.md](../../n8n-agents-official/references/CHAT_AGENT_PATTERNS.md)
+- [ ] **Bot's own user ID not filtered out**, either via the trigger's own filter option (preferred: Slack's `options.userIds` exclusion list) or as the first node after the trigger. The bot's reply re-triggers the workflow → infinite loop. Watch out for surface-specific semantics: Telegram's `userIds` is an allowlist, not an exclusion list. → [CHAT_SURFACE_PATTERNS.md](../../n8n-ai-nodes-official/references/CHAT_SURFACE_PATTERNS.md)
 
 ---
 
@@ -122,24 +133,33 @@ Before walking the per-domain list:
 ### AI Agents and tools
 
 - [ ] **`options.maxIterations` left at default 10 on a multi-tool agent.** Likely too low for modern agents with flexible tool sets; throws "Max iterations reached" workflow error. Raise to 30-50+. → [AI_NODES.md "Iteration cap"](../../n8n-node-configuration-official/references/AI_NODES.md)
-- [ ] **Generic tool names (`doStuff`, `runQuery`).** Model can't tell which tool to pick, skips them or hallucinates parameters. Use verb-first specific names. → [TOOLS.md](../../n8n-agents-official/references/TOOLS.md)
-- [ ] **Default, Empty, or one-line tool descriptions.** Model has no clue when to invoke. Tool descriptions are part of the prompt. → [TOOLS.md](../../n8n-agents-official/references/TOOLS.md)
-- [ ] **`outputParserStructured` without `autoFix: true`.** One bad model output and the workflow fails. Set `autoFix: true` with a coding-capable fixer model. → [STRUCTURED_OUTPUT.md](../../n8n-agents-official/references/STRUCTURED_OUTPUT.md)
-- [ ] **Tools with user-visible side effects (send, pay, refund) without human review.** Wrap with `slackHitlTool` / `discordHitlTool` / `telegramHitlTool` / `gmailHitlTool` / etc. → [HUMAN_REVIEW.md](../../n8n-agents-official/references/HUMAN_REVIEW.md)
-- [ ] **Approval message via `fromAi()` instead of `$tool.parameters.<name>`.** Model paraphrases; you approve text not values. → [HUMAN_REVIEW.md](../../n8n-agents-official/references/HUMAN_REVIEW.md)
-- [ ] **Hardcoded `sessionId: 'default'` or no sessionId** on memory. All conversations share one session or sessions won't be used properly. → [MEMORY.md](../../n8n-agents-official/references/MEMORY.md)
-- [ ] **Image / audio / video generation wrapped in an Agent.** Binary doesn't flow through tools or the Agent's output formatter. Use the provider's native single-call node directly. → [n8n-agents-official anti-patterns](../../n8n-agents-official/SKILL.md)
-- [ ] **Agent + Switch to route on natural-language input** when Text Classifier (`@n8n/n8n-nodes-langchain.textClassifier`) is one node with N built-in branches. → [n8n-agents-official](../../n8n-agents-official/SKILL.md)
-- [ ] **Agent (or Basic LLM Chain + structured output parser) used to pull fields out of a blob of text** when Information Extractor (`@n8n/n8n-nodes-langchain.informationExtractor`) is one node with a typed schema, no tools, no system prompt. Use the Agent only when the extraction needs tool calls or multi-turn reasoning. → [n8n-agents-official](../../n8n-agents-official/SKILL.md)
+- [ ] **Generic tool names (`doStuff`, `runQuery`).** Model can't tell which tool to pick, skips them or hallucinates parameters. Use verb-first specific names. → [TOOLS.md](../../n8n-ai-nodes-official/references/TOOLS.md)
+- [ ] **Default, Empty, or one-line tool descriptions.** Model has no clue when to invoke. Tool descriptions are part of the prompt. → [TOOLS.md](../../n8n-ai-nodes-official/references/TOOLS.md)
+- [ ] **`outputParserStructured` without `autoFix: true`.** One bad model output and the workflow fails. Set `autoFix: true` with a coding-capable fixer model. → [STRUCTURED_OUTPUT.md](../../n8n-ai-nodes-official/references/STRUCTURED_OUTPUT.md)
+- [ ] **Tools with user-visible side effects (send, pay, refund) without human review.** Wrap with `slackHitlTool` / `discordHitlTool` / `telegramHitlTool` / `gmailHitlTool` / etc. → [HUMAN_REVIEW.md](../../n8n-ai-nodes-official/references/HUMAN_REVIEW.md)
+- [ ] **Approval message via `fromAi()` instead of `$tool.parameters.<name>`.** Model paraphrases; you approve text not values. → [HUMAN_REVIEW.md](../../n8n-ai-nodes-official/references/HUMAN_REVIEW.md)
+- [ ] **Hardcoded `sessionId: 'default'` or no sessionId** on memory. All conversations share one session or sessions won't be used properly. → [MEMORY.md](../../n8n-ai-nodes-official/references/MEMORY.md)
+- [ ] **Image / audio / video generation wrapped in an Agent.** Binary doesn't flow through tools or the Agent's output formatter. Use the provider's native single-call node directly. → [n8n-ai-nodes-official anti-patterns](../../n8n-ai-nodes-official/SKILL.md)
+- [ ] **Agent + Switch to route on natural-language input** when Text Classifier (`@n8n/n8n-nodes-langchain.textClassifier`) is one node with N built-in branches. → [n8n-ai-nodes-official](../../n8n-ai-nodes-official/SKILL.md)
+- [ ] **Agent (or Basic LLM Chain + structured output parser) used to pull fields out of a blob of text** when Information Extractor (`@n8n/n8n-nodes-langchain.informationExtractor`) is one node with a typed schema, no tools, no system prompt. Use the Agent only when the extraction needs tool calls or multi-turn reasoning. → [n8n-ai-nodes-official](../../n8n-ai-nodes-official/SKILL.md)
+
+### First-class n8n Agents: quality
+
+- [ ] **Node tool without a `description`** in its JSON. It gets a generic "Execute node" text and is picked badly. → [TOOLS.md](../../n8n-agents-official/references/TOOLS.md)
+- [ ] **Tool `expression` input that reads trigger or upstream data** (`$('Webhook')`, `$json.<event field>`). Tools only see the model's arguments, so it's empty or wrong. → [TOOLS.md "What expressions can see"](../../n8n-agents-official/references/TOOLS.md)
+- [ ] **Vague `useWhen` on sub-agents or vector stores, or skill descriptions that don't say "Use when ...".** These are the triggers; vague ones never fire. → [SKILLS.md](../../n8n-agents-official/references/SKILLS.md)
+- [ ] **Task with no `timezone`, or an objective that doesn't say where results go.** Fires at the wrong hour, or produces output nobody sees. → [TASKS.md](../../n8n-agents-official/references/TASKS.md)
+- [ ] **Slack approval where the approver needs the values** (amount, recipient). Channel cards don't show parameters. → [APPROVALS.md](../../n8n-agents-official/references/APPROVALS.md)
+- [ ] **MCP server without `toolFilter`**, exposing a whole catalog when the Agent needs a few tools. → [TOOLS.md](../../n8n-agents-official/references/TOOLS.md)
 
 ### System prompts (AI Agents)
 
 The system prompt is the load-bearing config of an agent. Severity ranges by how badly the issue degrades behavior.
 
-- [ ] **Hardcoded date / missing date in the system prompt.** Stale immediately. Agents making time-sensitive decisions (deadlines, eligibility windows, "is X expired?") get wrong answers. Use `Current date: {{ $now }}`. → [SYSTEM_PROMPT.md "Always include the current date"](../../n8n-agents-official/references/SYSTEM_PROMPT.md)
-- [ ] **Long system prompt with per-tool usage instructions buried inside.** Modular split violation. Brittle to edit, and tools become unreusable across agents. Move tool-specific instructions into each tool's description. → [SYSTEM_PROMPT.md "The modular split"](../../n8n-agents-official/references/SYSTEM_PROMPT.md) and [n8n-agents-official "What goes in the system prompt vs the tool description"](../../n8n-agents-official/SKILL.md)
-- [ ] **"You are a helpful assistant" preamble with no role specifics.** Generic responses, agent has no identity. Replace with a specific role and scope. → [SYSTEM_PROMPT.md "What it's for"](../../n8n-agents-official/references/SYSTEM_PROMPT.md)
-- [ ] **No refusal/safety boundary** when one is needed (the agent has tools that touch user-visible state, sends, payments). Define explicit boundaries: "only answer questions about X, redirect otherwise". → [SYSTEM_PROMPT.md](../../n8n-agents-official/references/SYSTEM_PROMPT.md)
+- [ ] **Hardcoded date / missing date in the system prompt.** Stale immediately. Agents making time-sensitive decisions (deadlines, eligibility windows, "is X expired?") get wrong answers. Use `Current date: {{ $now }}`. → [SYSTEM_PROMPT.md "Always include the current date"](../../n8n-ai-nodes-official/references/SYSTEM_PROMPT.md)
+- [ ] **Long system prompt with per-tool usage instructions buried inside.** Modular split violation. Brittle to edit, and tools become unreusable across agents. Move tool-specific instructions into each tool's description. → [SYSTEM_PROMPT.md "The modular split"](../../n8n-ai-nodes-official/references/SYSTEM_PROMPT.md) and [n8n-ai-nodes-official "What goes in the system prompt vs the tool description"](../../n8n-ai-nodes-official/SKILL.md)
+- [ ] **"You are a helpful assistant" preamble with no role specifics.** Generic responses, agent has no identity. Replace with a specific role and scope. → [SYSTEM_PROMPT.md "What it's for"](../../n8n-ai-nodes-official/references/SYSTEM_PROMPT.md)
+- [ ] **No refusal/safety boundary** when one is needed (the agent has tools that touch user-visible state, sends, payments). Define explicit boundaries: "only answer questions about X, redirect otherwise". → [SYSTEM_PROMPT.md](../../n8n-ai-nodes-official/references/SYSTEM_PROMPT.md)
 
 ### Data Tables
 
@@ -257,8 +277,8 @@ The system prompt is the load-bearing config of an agent. Severity ranges by how
 
 ### Conventions
 
-- [ ] **Per-execution context (user identity, files, current task) buried in a static system prompt** instead of injected via expressions or piecing. Hard to update. → [SYSTEM_PROMPT.md "Storing the prompt"](../../n8n-agents-official/references/SYSTEM_PROMPT.md)
-- [ ] **Generic safety boilerplate language** in the system prompt for risks the model already handles. Reinforcement adds tokens without changing behavior. Reserve safety language for specific, named risks. → [SYSTEM_PROMPT.md anti-patterns](../../n8n-agents-official/references/SYSTEM_PROMPT.md)
+- [ ] **Per-execution context (user identity, files, current task) buried in a static system prompt** instead of injected via expressions or piecing. Hard to update. → [SYSTEM_PROMPT.md "Storing the prompt"](../../n8n-ai-nodes-official/references/SYSTEM_PROMPT.md)
+- [ ] **Generic safety boilerplate language** in the system prompt for risks the model already handles. Reinforcement adds tokens without changing behavior. Reserve safety language for specific, named risks. → [SYSTEM_PROMPT.md anti-patterns](../../n8n-ai-nodes-official/references/SYSTEM_PROMPT.md)
 
 ---
 

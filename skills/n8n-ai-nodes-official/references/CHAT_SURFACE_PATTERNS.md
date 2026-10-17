@@ -1,6 +1,8 @@
-# Chat agent patterns: shell + core + sub-agents
+# Chat surface patterns: shell + core + sub-agents
 
 For external chat surfaces: Slack, Discord, Microsoft Teams, Telegram, embedded webhook chats. The pieces (memory, tools, sub-workflow as tool, structured output) are covered in their own refs. **This file covers the multi-workflow composition that production chat agents grow into**, plus chat-surface-specific gotchas the other refs don't.
+
+The shell is the same whether the core is an AI Agent node sub-workflow or a first-class n8n Agent called with Message an Agent. For the second, see "Core as Message an Agent" below. If the first-class Agent's own channel (Slack, Telegram, Discord, Linear) covers the need, no shell is needed at all: see `n8n-agents-official` `references/CHANNELS.md`.
 
 **Anti-loop filtering is required regardless of complexity.** Any chat-triggered workflow that posts a reply MUST filter out the bot's own user ID right after the trigger, or it triggers itself forever. That's the minimum bar for every bot, not a reason to split. Some triggers may have built in parameters for this.
 
@@ -176,6 +178,42 @@ sessionKey: '={{ $json.threadId }}',
 Per-execution context (user identity, attached files) goes in a Set node before the agent and gets templated into the system prompt, pattern in `SYSTEM_PROMPT.md` "File handling injection" and "Template + variables." Don't add a Set node speculatively for context that isn't varying yet. Inline in `systemMessage` is fine until reuse is real.
 
 For Slack Block Kit, Discord embeds, or Teams adaptive cards, pair the agent with `outputParserStructured` (see `STRUCTURED_OUTPUT.md`). The general guidance to default to `schemaType: 'manual'` with a real JSON Schema applies even more strongly here: Block Kit and adaptive cards lean heavily on `oneOf` union types across block kinds, plus enums for fields like `style` and per-block constraints, none of which `jsonSchemaExample` can express. Examples will produce confidently-wrong block trees that the surface rejects.
+
+## Core as Message an Agent
+
+When the brain is a first-class n8n Agent, the core sub-workflow collapses into one Message an Agent node (`n8n-nodes-base.messageAnAgent`) in the shell. The shell, anti-loop filter, loading UX, and error UX above stay exactly the same.
+
+```ts
+const askAgent = node({
+    type: 'n8n-nodes-base.messageAnAgent',
+    version: 3.1,
+    config: {
+        name: 'Ask support agent',
+        onError: 'continueErrorOutput',
+        parameters: {
+            agentId: { __rl: true, mode: 'id', value: '<AGENT_ID>' },
+            message: '={{ $("Filter bot").item.json.text }}',
+            advanced: {
+                session: { session: {
+                    sessionIdType: 'customKey',
+                    sessionKey: '={{ "support-slack-" + ($("Filter bot").item.json.thread_ts || $("Filter bot").item.json.ts) }}',
+                } },
+            },
+        },
+    },
+})
+```
+
+What changes versus an AI Agent node core:
+
+- **The reply is `$json.text`**, plus `structuredOutput`, `toolCalls`, `usage`, `finishReason`, and `session.{agentId, projectId, sessionId, threadId}`.
+- **Session keys are project-wide, not per agent.** A key belongs to the first agent that uses it. The same agent with the same key from any workflow continues the session; a different agent with that key fails with "Failed to create the agent execution record". Prefix every key with the agent's purpose (`support-slack-<thread_ts>`), even if only one agent uses it today. Max 74 characters.
+<!-- TEMPORARY: sessions can't be shared between native channel conversations (Slack, Telegram, Discord, Linear, n8n Chat) and Message an Agent calls from workflows. Revisit if n8n adds a way to key into a native session from a workflow, or vice versa. -->
+- **A shell session never meets a native-channel session.** If the same agent also has its own Slack channel, those threads and the shell's keys are separate conversations with separate memory.
+- **No approvals.** A tool with approval required fails the node with "Suspend/resume is not supported in workflow execution context". Put human review in the shell instead: have the agent return a structured decision, then gate the action with a send-and-wait node.
+- **Draft vs published.** Manual and chat-mode executions run the Agent's draft; production executions run the published version.
+
+Full node reference: `n8n-agents-official` `references/MESSAGE_AN_AGENT.md`.
 
 ## Sub-agents (agent as a tool)
 

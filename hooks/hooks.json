@@ -65,6 +65,24 @@
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/pre-tool-use/test-workflow.sh"
           }
         ]
+      },
+      {
+        "matcher": "^mcp__.*__create_agent$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/pre-tool-use/agent-build.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "^mcp__.*__mutate_agent$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/pre-tool-use/agent-build.sh"
+          }
+        ]
       }
     ],
     "PostToolUse": [
