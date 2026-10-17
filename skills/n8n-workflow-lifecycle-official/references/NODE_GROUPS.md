@@ -35,7 +35,7 @@ All four are `update_workflow` operations. Members are **node names**, never ids
 
 In SDK code, declare a group with `.group(name, members, options?)` on the workflow, where members are the node handles (the `const` from `node(...)`), the same way connections reference nodes.
 
-## Failure modes: groups never fail the save
+## Failure modes: a bad group op is skipped, not fatal
 
 Group ops are the **one exception** to `update_workflow` being atomic: an invalid group op is skipped and the rest of the batch still saves. (An over-long description is the one thing that still fails the whole call: see Descriptions.) So a call that looks successful can still have lost a group, and the fields that say so differ by tool.
 
