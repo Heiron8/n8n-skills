@@ -15,7 +15,8 @@
 # - n8n-credentials-and-security-official: newCredential() OR HTTP OR webhook OR respond
 # - n8n-error-handling-official: webhook OR respond OR scheduleTrigger OR chatTrigger OR agent
 # - n8n-workflow-lifecycle-official (readability): more than 6 nodes
-# - n8n-agents-official: LangChain agent node present
+# - n8n-ai-nodes-official: LangChain agent node present
+# - n8n-agents-official: Message an Agent node present
 #
 # Header and closing gate fire always.
 # Fires every call (no dedup).
@@ -53,6 +54,7 @@ HAS_DATETIME=0;        has_str "n8n-nodes-base.dateTime"              && HAS_DAT
 HAS_SUBWF_TRIGGER=0;   has_str "n8n-nodes-base.executeWorkflowTrigger" && HAS_SUBWF_TRIGGER=1
 HAS_DATATABLE=0;       has_str "n8n-nodes-base.dataTable"             && HAS_DATATABLE=1
 HAS_AGENT=0;           has_str "n8n-nodes-langchain.agent"            && HAS_AGENT=1
+HAS_MESSAGE_AGENT=0;   has_str "n8n-nodes-base.messageAnAgent"        && HAS_MESSAGE_AGENT=1
 HAS_WEBHOOK=0;         has_str "n8n-nodes-base.webhook"               && HAS_WEBHOOK=1
 HAS_HTTP=0;            has_str "n8n-nodes-base.httpRequest"           && HAS_HTTP=1
 HAS_RESPOND=0;         has_str "n8n-nodes-base.respondToWebhook"      && HAS_RESPOND=1
@@ -93,6 +95,7 @@ DETECTED=""
 [ $HAS_SUBWF_TRIGGER -eq 1 ]  && DETECTED+=" SubWorkflowTrigger"
 [ $HAS_DATATABLE -eq 1 ]      && DETECTED+=" DataTable"
 [ $HAS_AGENT -eq 1 ]          && DETECTED+=" Agent"
+[ $HAS_MESSAGE_AGENT -eq 1 ]  && DETECTED+=" MessageAnAgent"
 [ $HAS_WEBHOOK -eq 1 ]        && DETECTED+=" Webhook"
 [ $HAS_HTTP -eq 1 ]           && DETECTED+=" HttpRequest"
 [ $HAS_RESPOND -eq 1 ]        && DETECTED+=" RespondToWebhook"
@@ -129,7 +132,9 @@ SUGGESTIONS=""
 [ $INCLUDE_DESIGN -eq 1 ]         && SUGGESTIONS+="
 - n8n-workflow-lifecycle-official (>6 nodes: sticky notes, descriptions capturing the why)"
 [ $HAS_AGENT -eq 1 ]              && SUGGESTIONS+="
-- n8n-agents-official (LangChain agent detected)"
+- n8n-ai-nodes-official (LangChain agent detected)"
+[ $HAS_MESSAGE_AGENT -eq 1 ]      && SUGGESTIONS+="
+- n8n-agents-official (Message an Agent: publish state, session keys, no approvals)"
 
 # Compose final output. If nothing relevant was detected, just header + footer.
 if [ -z "$SUGGESTIONS" ]; then

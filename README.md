@@ -9,7 +9,7 @@ Built by the n8n team to pair with n8n's instance-level MCP server. Your coding 
 **What's inside:**
 
 - **The n8n MCP connection, set up for you** (Claude Code): the plugin bundles the `n8n-mcp` server and prompts for your instance URL at install, so there's no manual MCP config. Codex adds it with one `codex mcp add`.
-- **13 capability skills** covering best practices across the full workflow lifecycle: sub-workflow reuse, expressions, loops and pagination, AI agents, error handling, credentials, Data Tables, debugging, and more.
+- **14 capability skills** covering best practices across the full workflow lifecycle: sub-workflow reuse, expressions, loops and pagination, n8n Agents, AI nodes, error handling, credentials, Data Tables, debugging, and more.
 - **50+ reference docs and worked examples** loaded on demand: per-node gotchas, decision trees, and copy-pasteable workflow JSON / TypeScript SDK snippets.
 - **A SessionStart hook** that loads the protocol on every session, including a compact reference for every n8n MCP tool.
 - **PreToolUse hooks** that nudge your agent to consult the matching skill before high-impact MCP calls.
@@ -122,14 +122,15 @@ and follow its routing into the matching capability skill before acting.
 | `n8n-node-configuration-official` | Configuring any node |
 | `n8n-code-nodes-official` | Custom logic, Code node consideration |
 | `n8n-loops-official` | Loops, batching, paginated APIs |
-| `n8n-agents-official` | LangChain Agent node, tools, system prompts, structured output |
+| `n8n-agents-official` | Building n8n Agents: Agent vs workflow, tools, approvals, skills, sub-agents, memory, channels, tasks |
+| `n8n-ai-nodes-official` | AI inside workflows: AI Agent node, classifiers, extractors, chains, RAG, chat bot workflows |
 | `n8n-error-handling-official` | Webhook APIs, production workflows |
 | `n8n-credentials-and-security-official` | Auth, API keys, tokens |
 | `n8n-binary-and-data-official` | Files, images, attachments, vision |
 | `n8n-data-tables-official` | Data Tables: schemas, dedup, persistent state |
 | `n8n-debugging-official` | Things break |
 
-A 14th meta-skill, `using-n8n-skills-official`, is loaded by the SessionStart hook in plugins and routes your agent to the right capability skill on every n8n task.
+A 15th meta-skill, `using-n8n-skills-official`, is loaded by the SessionStart hook in plugins and routes your agent to the right capability skill on every n8n task.
 
 ## How it works
 

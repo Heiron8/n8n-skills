@@ -45,6 +45,11 @@ Walk the workflow with these questions in mind. These are patterns that recur ac
 **Sub-workflow triggers:**
 - For each `Execute Workflow Trigger`, confirm **"Define Below"** mode with typed fields. Passthrough is only correct for (a) binary-receiving sub-workflows that won't be agent tools or (b) sub-workflows that genuinely take no inputs (Define Below requires at least one field). For (b), verify the body opens with a `Set` ("Keep Only Set", no fields) and a sticky noting no inputs are expected. See `n8n-subworkflows-official` non-negotiable #2.
 
+**Message an Agent nodes** (calling a first-class n8n Agent):
+- The Agent is published (production runs use the published version), has a memory block if `sessionKey` is set, and has no approval-required tools: approvals fail under Message an Agent.
+- `sessionKey` is prefixed per Agent (`support-<telegramId>`, not the bare id): keys are project-wide, so a second Agent called with a key the first already used fails. Max 74 chars.
+- `onError: 'continueErrorOutput'` with a handled error branch on anything user-facing. See `n8n-agents-official` `references/MESSAGE_AN_AGENT.md`.
+
 **Data references:**
 - Search for `$json.` in expressions. Replace with `$('Node Name').item.json.` unless the node is directly downstream of a single source with no intermediates (`n8n-expressions-official` non-negotiable #1).
 - Search for `$env.` in expressions. Doesn't work, throws at runtime. Replace with `$vars.X` (paid plans), a Data Table, or a credential if it's a secret.

@@ -69,7 +69,7 @@ See `references/BINARY_BASICS.md` for more.
 
 ## Agent tool gymnastics
 
-Agent tools (sub-workflows wired into a LangChain Agent, or workflows exposed as MCP tools) have a constraint: parameters and results are JSON, not binary. Affects both directions.
+Agent tools (sub-workflows wired into an AI Agent node or a first-class n8n Agent, or workflows exposed as MCP tools) have a constraint: parameters and results are JSON, not binary. Affects both directions.
 
 **Inbound (user uploads → tool consumes):** the chat trigger gives `files[]`. The agent can have `passthroughBinaryImages: true` for vision, but `fromAi()` can't pass binary to a tool. So:
 

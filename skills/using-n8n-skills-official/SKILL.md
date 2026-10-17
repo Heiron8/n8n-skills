@@ -29,7 +29,7 @@ Unless a user preference overrides it, err on the side of loading too many skill
 - **Anything reusable becomes a stateless sub-workflow.** Search existing ones via `search_workflows({ tags: ['subworkflow'] })` before building. See `n8n-subworkflows-official`.
 - **n8n preferences belong in n8n, not in harness memory.** When the user states a durable n8n preference, save it with `save_user_preference` rather than writing it to CLAUDE.md, AGENTS.md, or your own memory: the n8n store is read by the n8n assistant and every AI tool on the instance, so a preference parked in harness memory is invisible outside this session. Read what's already saved once before you start changing things (`get_user_preferences`) and apply it across the task. If the user would rather keep their n8n preferences in their own context file, that's their call: follow it. See "User preferences" below.
 <!-- TEMPORARY: n8n credits is n8n Cloud only for now and the coverage may expand; revisit this default and the cloud-only caveat when that changes. -->
-- **Prefer n8n credits when the user has no credential preference.** For nodes it covers (check `list_n8n_connect_services`), n8n supplies the managed credential, so there's no setup step, much easier than the user provisioning their own. n8n Cloud only for now. See `n8n-credentials-and-security-official`.
+- **Prefer n8n credits when the user has no credential preference.** For nodes it covers (check `list_n8n_gateway_services`), n8n supplies the managed credential, so there's no setup step, much easier than the user provisioning their own. n8n Cloud only for now. See `n8n-credentials-and-security-official`.
 
 ## Red flags: thoughts that mean STOP and invoke
 
@@ -41,7 +41,10 @@ These rationalizations cause skills to be skipped. If you catch yourself thinkin
 | "I'll add a Set node here to map these fields" | Invoke `n8n-expressions-official`. Set nodes feeding only 0 or 1 downstream consumer are the most common antipattern in this entire pack. |
 | "I'll just use a Code node, it's easier" | Invoke `n8n-code-nodes-official`. The bar is high. Most reaches for Code can be expressions or Edit Fields with arrow functions. |
 | "Validation passed, I'm ready to publish" | Invoke `n8n-workflow-lifecycle-official` and walk `VALIDATION_CHECKLIST.md` section 2 (the antipattern scan). Validation passing is necessary, not sufficient. |
-| "The agent is wired up, the tool descriptions look fine" | Invoke `n8n-agents-official` `references/TOOLS.md`. Tool names and descriptions ARE part of the prompt, and "looks fine" usually means generic. |
+| "The user wants an agent, I'll wire a Chat Trigger to an AI Agent node" | Invoke `n8n-agents-official`. "Agent" or "assistant" means a first-class n8n Agent unless one of its listed limits applies. |
+| "The Agent validates, I'll publish it" | Don't. A built Agent is a draft; publish only on the user's explicit OK. Channels go live with it. |
+| "I'll map the webhook field straight into the Agent's tool input" | Invoke `n8n-agents-official` `references/TOOLS.md`. Agent tool expressions only see the model's arguments; exact mapping stays in a workflow. |
+| "The agent is wired up, the tool descriptions look fine" | Invoke `n8n-ai-nodes-official` `references/TOOLS.md` (AI Agent node) or `n8n-agents-official` `references/TOOLS.md` (first-class Agent). Tool names and descriptions ARE part of the prompt, and "looks fine" usually means generic. |
 | "I'll set this sub-workflow trigger to passthrough" | Invoke `n8n-subworkflows-official`. Passthrough is only correct for binary-receiving sub-workflows that won't be agent tools, or for sub-workflows that genuinely take no inputs (Define Below requires at least one field). |
 | "I'll use passthrough so binary works, then branch internally on which input shape arrived" | Invoke `n8n-subworkflows-official` `references/SUBWORKFLOW_PATTERNS.md` "Splitting by input shape". This is the signal to SPLIT into two outer sub-workflows (one Define Below, one passthrough) sharing a common downstream sub-workflow. Don't fight passthrough vs Define Below in one trigger. |
 | "This section's big, I'll pull it into a sub-workflow" | If it's only to tidy the canvas (not reuse/isolation/testing), a node group is lighter, faster, and simpler: keep it inline and group it. Extract to a sub-workflow only for reuse, isolation, or an agent tool. See `n8n-workflow-lifecycle-official` `references/NODE_GROUPS.md`. |
@@ -70,7 +73,8 @@ Invoke via the Skill tool. Trigger column = when to invoke.
 | `n8n-node-configuration-official` | Configuring any node. Operation-aware, property dependencies, never assume parameters |
 | `n8n-code-nodes-official` | User reaches for a Code node, or custom logic is needed. Decision tree, JavaScript patterns when truly required |
 | `n8n-loops-official` | Multi-item data, batching, paginated APIs, "for each" or "loop over" mentions. Default per-item iteration, `executeOnce`, Loop Over Items, HTTP pagination |
-| `n8n-agents-official` | LangChain Agent node, tool calling, system prompts, structured output, memory, RAG. Tool names/descriptions as part of the prompt, sub-workflow as tool, modular prompt design |
+| `n8n-agents-official` | The user wants an agent, assistant, or bot, or any Agent MCP tool. Agent vs workflow vs AI Agent node, Agent config, tools, approvals, skills, sub-agents, knowledge, memory and sessions, channels, tasks, Message an Agent, reading sessions |
+| `n8n-ai-nodes-official` | AI inside a workflow: AI Agent node, Text Classifier, Information Extractor, chains, RAG, structured output, AI media. Chat bot workflows on Slack / Discord / Teams / Telegram |
 | `n8n-error-handling-official` | Webhook-triggered or production-bound workflows. Error branch on every fallible node, 4xx for caller errors and 5xx for execution errors |
 | `n8n-credentials-and-security-official` | Any auth, API key, or token mention. Credential system, custom credentials, HTTP Request with official creds |
 | `n8n-binary-and-data-official` | Files, images, attachments. Binary handling patterns, agent-tool boundary, CDN requirement for chat surfaces |
@@ -128,7 +132,7 @@ When a saved preference conflicts with what the user asks for right now, follow 
 | `validate_node_config` | Schema-only validation of node configs (1-50 per call). Per-parameter errors, no graph noise. Side-channel for iteration/debug; `validate_workflow` still gates publish. For ai_tool subnodes set `isToolNode: true`. |
 | `validate_workflow` | Validate full SDK code before create/update. Necessary but **not sufficient**: doesn't catch all wiring traps (`.to()`, merge index). |
 | `list_credentials` | List accessible credentials (filter by type/project/etc). Returns metadata only, **never secret values**. Discover IDs before binding via `setNodeCredential`. |
-| `list_n8n_connect_services` | List node/credential types the platform can supply managed credentials for (n8n credits coverage), so the user can skip credential setup for them. |
+| `list_n8n_gateway_services` | List node/credential types the platform can supply managed credentials for (n8n credits coverage), so the user can skip credential setup for them. |
 
 ### Workflow testing & execution
 
@@ -161,12 +165,12 @@ n8n's built-in tabular storage. **Not** an external service. Prefer over externa
 | `get_workflow_versions_diff` | Diff two saved versions: nodes/connections added, removed, modified. |
 | `restore_workflow_version` | Re-apply a past version as the current draft (records a new history entry). |
 
-<!-- TEMPORARY: n8n Agents are in early preview. When the Agent tools ship to all instances, drop the early-preview callout below and update n8n-agents-official. -->
-### Building n8n Agents (early preview)
+### Building n8n Agents
 
-**Early preview: these tools may not exist on the user's instance yet.** They register only when the instance enables the Agent builder. Before building an Agent, check whether `create_agent` is in your tool list (or ask the user); if it's absent, tell them the Agent preview isn't enabled rather than guessing or falling back to the LangChain Agent node.
+<!-- TEMPORARY: revisit when the Preview tag is removed from Agents in the UI, and when Agents are declared ready for Enterprise. -->
+n8n Agents are generally available. The UI shows a Preview tag because they change often and some features you might expect aren't there yet. They aren't ready for Enterprise yet: an Enterprise instance may have them enabled, but don't assume it. If `create_agent` isn't in your tool list, Agents aren't enabled on this instance; say so and offer a workflow instead.
 
-n8n **Agents** are a first-class conversational-agent product, distinct from the LangChain Agent node (`n8n-agents-official` covers the node, not these tools). Build order: `get_agent_builder_reference` → `discover_agent_assets` → `create_agent` → `mutate_agent` (one change per call, latest `configHash`) → `validate_agent` → `call_agent` to test.
+A first-class n8n Agent is configured as JSON through these tools, never with Workflow SDK code. Invoke `n8n-agents-official` before the first call; it decides Agent vs workflow and covers every tool below. The AI Agent node inside a workflow is `n8n-ai-nodes-official`. Agent conversations aren't workflow executions: `get_workflow_execution` only sees workflows an Agent called as tools.
 
 | Tool | What it does |
 |---|---|
@@ -175,7 +179,7 @@ n8n **Agents** are a first-class conversational-agent product, distinct from the
 | `search_agents` | Find existing Agents; also discovers sub-agents to attach. |
 | `get_agent` | Read a draft's config, resources, runnable state, and `configHash`. Call before `mutate_agent`. |
 | `list_agent_versions` | List an Agent's publish history, newest first. |
-| `create_agent` | Create a draft (optional initial model/credential/instructions). Returns the editor URL. |
+| `create_agent` | Create a draft (optional initial model/credential/instructions). Returns the editor URL. Include `memory: { enabled: true, storage: "n8n" }` or the Agent is stateless. |
 | `mutate_agent` | Apply one config/skill/task/custom-tool change, using the latest `configHash`. |
 | `verify_agent_mcp_server` | Test an MCP server + credential and return its tools. Call before adding an `mcpServers` entry. |
 | `update_agent_integration` | Connect or disconnect a Slack, Telegram, or Linear channel. |
