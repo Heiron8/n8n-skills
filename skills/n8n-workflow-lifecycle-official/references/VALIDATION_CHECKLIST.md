@@ -91,7 +91,8 @@ Quick pass:
 - Workflow name follows the verb-first pattern (`NAMING_CONVENTIONS.md`). Sub-workflows are tagged (`subworkflow`, a domain tag, `tool`) since that's how `search_workflows({ tags })` finds them.
 - `description` is set and captures both *what* and *why*, with searchable keywords.
 - Nodes are renamed from defaults.
-- Workflows past ~10 nodes group their logical steps into node groups (`setNodeGroups`). Ungrouped still runs, but a large ungrouped canvas is hard to read and maintain, so take it seriously. See `SKILL.md` "Readability".
+- Canvases over 7 top-level boxes (trigger + groups + ungrouped nodes) group their logical steps. Ungrouped still runs, but a large ungrouped canvas is hard to read, and from n8n 2.40.0 the server warns about it. See `NODE_GROUPS.md`.
+- The last save reported no unresolved group problem: `skippedGroups` on a create, `skippedOperations` / `removedGroups` on an update, or an over-ceiling warning from either (one marked `[pre-existing]` was already true before your change: leave it). A group op can be skipped, and an existing group can be removed by unrelated edits, without the save failing. See `NODE_GROUPS.md` "Failure modes".
 
 These don't block publish technically, but workflows without them rot faster.
 

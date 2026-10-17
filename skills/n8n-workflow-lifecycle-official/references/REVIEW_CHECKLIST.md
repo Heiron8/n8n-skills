@@ -239,10 +239,12 @@ The system prompt is the load-bearing config of an agent. Severity ranges by how
 
 ### Readability
 
-- [ ] **Workflow over ~10 nodes (n8n 2.28+) whose logical steps aren't grouped into node groups.** Grouping is the node group's job; collapsed groups make the canvas read as steps, not nodes. Skip on older instances, where node groups don't exist. → [SKILL.md "Readability"](../SKILL.md)
-- [ ] **Sticky note used to fake a group instead of `setNodeGroups`.** Stickies annotate (callouts, TODOs, warnings); they don't group. → [SKILL.md "Readability"](../SKILL.md)
+- [ ] **Canvas over 7 top-level boxes (n8n 2.28+) whose logical steps aren't grouped into node groups.** Boxes are the trigger, each group, and each ungrouped node; sub-nodes and stickies don't count. Collapsed groups make the canvas read as steps, not nodes. Skip on older instances, where node groups don't exist. → [NODE_GROUPS.md](NODE_GROUPS.md)
+- [ ] **Group with no `description`, or one written to restate its title.** Groups are created collapsed, so title plus description is all a reader gets. Max 145 characters. → [NODE_GROUPS.md](NODE_GROUPS.md)
+- [ ] **An Agent grouped apart from its sub-nodes.** Any non-main connection crossing the boundary drops the group; all in or all out. → [NODE_GROUPS.md](NODE_GROUPS.md)
+- [ ] **Sticky note used to fake a group instead of a node group.** Stickies annotate (callouts, TODOs, warnings); they don't group. → [SKILL.md "Readability"](../SKILL.md)
 - [ ] **Sticky title re-states what's visible** (`Set, If, Set`). Title with the callout's point. → [SKILL.md "Readability"](../SKILL.md)
-- [ ] **Sticky colors used inconsistently.** One color per category (processing / errors / TODOs); otherwise color is noise. → [SKILL.md "Readability"](../SKILL.md)
+- [ ] **Sticky color used for variety instead of meaning.** Color should say what happens there (green creates or involves a person, red destructive or irreversible, blue routing, gray documentation), one meaning per color, matching whatever nearby workflows already use. → [STICKY_NOTES.md](STICKY_NOTES.md)
 - [ ] **Sticky sitting away from, or on top of, what it describes.** On create, anchor it with `sticky(content, [nodes])` instead of positioning by hand. A note at `[0, 0]` is the usual tell, though saved JSON can't distinguish an omitted `position` from a deliberate one, so check where it should sit rather than how it got there. → [STICKY_NOTES.md](STICKY_NOTES.md)
 - [ ] **Workflow `description` is empty, one sentence, or doesn't capture the *why*.** Two sentences: what it does, why it exists. → [SKILL.md "Readability"](../SKILL.md)
 - [ ] **Code node without a one-line note** explaining its purpose. → [SKILL.md "Readability"](../SKILL.md)
