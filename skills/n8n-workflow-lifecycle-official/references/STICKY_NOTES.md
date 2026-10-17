@@ -19,10 +19,10 @@ The second argument is the anchor list. It **only sizes and places the note**: t
 Anchored, the note is a **background zone**. The serializer lays the graph out first, then wraps the box around wherever the anchors actually landed:
 
 ```
-x      = anchors.x      - 32        STICKY_PADDING
-y      = anchors.y      - 32 - 64   plus STICKY_HEADER_HEIGHT
-width  = anchors.width  + 64
-height = anchors.height + 64 + 64
+x      = anchors.x      - 32       # STICKY_PADDING
+y      = anchors.y      - 96       # STICKY_PADDING + STICKY_HEADER_HEIGHT
+width  = anchors.width  + 64       # STICKY_PADDING both sides
+height = anchors.height + 128      # both sides, plus the header
 ```
 
 snapped to the 16px grid. The 64px of headroom on top is where the title renders clear of the nodes, and the nodes draw on top of the note. That is the intended look, not an overlap bug.
@@ -40,7 +40,7 @@ The anchor set **is** the placement decision, so choosing it at random is what m
 | Role | Anchors | Color | Title |
 |---|---|---|---|
 | **Stage zone** | every node of one stage | what the stage does, below | `### Stage name` |
-| **Callout** | the single node it is about | 3 red for a warning, else 1 yellow | `### Point`, and nothing else: a one-node box is only 160px wide |
+| **Callout** | the single node it is about | 3 red for a warning, else 1 yellow | `### Point`, and nothing else: over a plain node the box is only 160px wide |
 | **Title band** | every node in the flow | 7 gray | `## What this workflow is` |
 
 A title band is the rare one. It only earns its place on a large canvas you are deliberately leaving ungrouped, because a grouped canvas gets its heading from the group names and an ungrouped canvas under 7 boxes already has the workflow name in the breadcrumb. When you do use one, it wraps the whole flow and the stage zones nest inside it, with no care needed on your part: n8n z-orders stickies by area, largest behind, so the band sits behind the zones and both sit behind the nodes.
@@ -104,13 +104,23 @@ The sides cannot be fixed the same way, because a declared width keeps the left 
 
 `content`, `width`, `height`, and `color` all live in `parameters`, not at the top level. **An omitted `position` becomes `[0, 0]`**, dropping a default 240x160 note at the canvas origin on top of whatever is there.
 
-To frame a run of nodes the way create does, read their positions from `get_workflow_details` and build the same box by hand: left edge minus 32, top minus 96, width plus 64, height plus 128, every value rounded to a multiple of 16.
+To frame a run of nodes the way create does, build the same box by hand. `get_workflow_details` gives positions but not sizes, and a position is the node's **top-left**, so you need the dimensions too: a plain node is 96x96, a node with configurable inputs is 256x96, and Message an Agent v2 and up is 320x128. Then:
+
+```
+left = min(x)            top    = min(y)
+right = max(x + width)   bottom = max(y + height)
+
+sticky.x = left - 32     sticky.width  = right - left + 64
+sticky.y = top - 96      sticky.height = bottom - top + 128
+```
+
+Round every value to a multiple of 16.
 
 ## Content, and where the overflow goes
 
 `###` on the first line for a zone or a callout, `##` for a title band, carrying the point of the note rather than the names of the nodes under it: a reader can already see `Set, If, Set`. Then one short line.
 
-**One line is the whole budget, and it is a budget at the zone's width.** Text renders from the note's top-left and only the top 64px clears the anchors, so anything longer renders *behind* the nodes where nobody reads it. A taller box does not help: it just extends further behind them. A one-node zone is 160px wide, where even a short sentence wraps three ways, so those get a title and nothing else.
+**One line is the whole budget, and it is a budget at the zone's width.** Text renders from the note's top-left and only the top 64px clears the anchors, so anything longer renders *behind* the nodes where nobody reads it. A taller box does not help: it just extends further behind them. A zone over one plain node is 96 + 64 = 160px wide, where even a short sentence wraps three ways, so those get a title and nothing else. Wider node types give a wider zone (256px-wide configurable nodes, 320px for Message an Agent v2 and up), but not enough to change the advice.
 
 Prose that does not fit goes somewhere else, and n8n has two better places for it:
 

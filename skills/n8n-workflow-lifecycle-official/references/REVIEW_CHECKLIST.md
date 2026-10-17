@@ -243,7 +243,7 @@ The system prompt is the load-bearing config of an agent. Severity ranges by how
 - [ ] **Sticky note used to fake a group instead of `setNodeGroups`.** Stickies annotate (callouts, TODOs, warnings); they don't group. → [SKILL.md "Readability"](../SKILL.md)
 - [ ] **Sticky title re-states what's visible** (`Set, If, Set`). Title with the callout's point. → [SKILL.md "Readability"](../SKILL.md)
 - [ ] **Sticky colors used inconsistently.** One color per category (processing / errors / TODOs); otherwise color is noise. → [SKILL.md "Readability"](../SKILL.md)
-- [ ] **Sticky sitting away from, or on top of, what it describes.** On create it should have been anchored via `sticky(content, [nodes])` rather than positioned by hand; a note at `[0, 0]` came from an `addNode` with no `position`. → [STICKY_NOTES.md](STICKY_NOTES.md)
+- [ ] **Sticky sitting away from, or on top of, what it describes.** On create, anchor it with `sticky(content, [nodes])` instead of positioning by hand. A note at `[0, 0]` is the usual tell, though saved JSON can't distinguish an omitted `position` from a deliberate one, so check where it should sit rather than how it got there. → [STICKY_NOTES.md](STICKY_NOTES.md)
 - [ ] **Workflow `description` is empty, one sentence, or doesn't capture the *why*.** Two sentences: what it does, why it exists. → [SKILL.md "Readability"](../SKILL.md)
 - [ ] **Code node without a one-line note** explaining its purpose. → [SKILL.md "Readability"](../SKILL.md)
 - [ ] **Workflow ignores existing house style** (sticky palette, naming convention used in nearby workflows). Match what's there. → [SKILL.md "Readability"](../SKILL.md)
