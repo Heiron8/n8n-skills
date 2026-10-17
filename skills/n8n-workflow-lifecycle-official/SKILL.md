@@ -84,13 +84,19 @@ Four levers carry the readability load, grouping from 7 boxes on and the other t
     - **A group must be a connected, trigger-free section with at most one member facing out in each direction**, with an Agent's sub-nodes all in or all out. Members are node **names**, not ids.
     - **An invalid group op is skipped, not fatal**, and unrelated edits can silently delete a valid existing group, so a save that looks clean can have lost one. The exception is a description over 145 characters: that rejects the whole `update_workflow` call. Read the group fields on every create and update, and repair before reporting done.
 
-- **Sticky notes: annotate, don't group.** Grouping is the node group's job (above). Sticky notes are a follow-up layer for context a group can't carry: a callout on a tricky section, a TODO, a warning, a note on the trigger. Use the `n8n-nodes-base.stickyNote` node with markdown `content` (`### Title` on the first line, 1-3 sentences of body) and an integer `color` 1-7. Pick a small palette and stick to it (e.g. gray/yellow for notes, red for warnings, pink for TODOs); random colors communicate nothing.
+- **Sticky notes: annotate, don't group.** Grouping is the node group's job (above). Stickies carry what a group name can't: a callout, a TODO, a warning. **Read `references/STICKY_NOTES.md` before placing one.**
+    - **On create, always anchor.** `sticky(content, [nodes], { color })` derives the box from the nodes it wraps, after layout. Coordinates guess at a canvas that doesn't exist yet; omitting both is worse, since the fallback centers the note under the whole graph and only dodges other stickies, never nodes. If you can't name the nodes a note is about, it doesn't belong on the canvas.
+    - **Three roles, and the anchor set follows from the role.** A **stage zone** anchors one stage's nodes; a **callout** anchors the single node it warns about; a gray **title band** anchors the whole flow and is rare, only for a canvas you're deliberately leaving ungrouped.
+    - **Scale:** under ~5 nodes, none. From 5 to 7 boxes, one zone per stage. Over 7, node groups section *and* document the canvas via their descriptions, and you anchor nothing to a grouped node: those positions are collapsed-chip slots, so the note draws over the expanded group and matches nothing collapsed.
+    - **Zones need room the derived box doesn't give.** Declare `height: 272` for a one-row zone, `464` for a branch fan (add 32 for Message an Agent v2+). Never declare a width. Then, **once the canvas is final**, widen every zone in one batched `update_workflow`: `x = min(node.x) - 56`, `width = span + 112`. Computed from the nodes, so re-running is harmless, but it's a finishing step, not per-edit.
+    - **`update_workflow` has no sticky op.** A sticky there is an `addNode` of `n8n-nodes-base.stickyNote` with `content`, `width`, `height`, `color` in `parameters`; an omitted `position` means `[0, 0]`.
+    - **Content and color:** `### Title` carrying the point, plus one short line. Only the top 64px clears the nodes, so never add height for more text; longer prose goes in node `notes` or the workflow `description`. `color` 1-7 stands for what happens there: green creates or involves a person, red is destructive or irreversible, blue is routing and transformation, gray is documentation. A user preference, then nearby workflows, outrank that.
 - **Node `notes` for non-obvious config.** Explain *why* a workaround exists or a Code node does what it does. Don't annotate obvious nodes.
 
 Plus two notes:
 
 - **Match existing project conventions before introducing your own.** Skim a couple of nearby workflows via `search_workflows` + `get_workflow_details` and mirror the sticky palette, naming, and description style.
-- **Layout is auto-applied on create / update.** SDK `position` values for non-sticky nodes are ignored. Stickies, node groups, and naming are your readability levers.
+- **Layout runs on create, never on update.** `create_workflow_from_code` lays out every node that doesn't carry an explicit `position`, so omit them and let it. Setting some and not others is the bad case: yours are honored and the rest are laid out around them, which is how nodes end up stacked. `update_workflow` runs no layout at all, so anything you add sits exactly where you put it.
 
 ## Folder management
 
@@ -145,6 +151,7 @@ Keep it tight: half a dozen bullets, not a wall of text. The user shouldn't have
 |---|---|
 | `references/NAMING_CONVENTIONS.md` | Naming a new workflow, sub-workflow, or node |
 | `references/NODE_GROUPS.md` | **Before creating or editing any node group**, or after a save reported a skipped or removed group |
+| `references/STICKY_NOTES.md` | About to add, move, or resize a sticky note on either tool |
 | `references/FOLDER_LIMITATIONS.md` | User mentions a folder, project structure, or wants workflows organized |
 | `references/MCP_ACCESS_PER_WORKFLOW.md` | Building a workflow that you or another agent will call via MCP |
 | `references/VALIDATION_CHECKLIST.md` | Just finished a workflow and about to call `publish_workflow` |
@@ -164,5 +171,6 @@ Keep it tight: half a dozen bullets, not a wall of text. The user shouldn't have
 | No node groups on a canvas over 7 top-level boxes | Reader has to read every node to find what they want | Group each logical step. See `references/NODE_GROUPS.md` |
 | Reporting a create or update as done without reading its group fields (`skippedGroups` on create; `skippedOperations` / `removedGroups` on update) | A group op was silently skipped, or an existing group was deleted by an unrelated edit, and the save still looked successful | Check them on every call and repair. See `references/NODE_GROUPS.md` |
 | Sticky note used to fake a group, or sticky-of-every-color | Grouping is the node group's job / color becomes pure noise | Group with a node group; reserve stickies for callouts, one color per category |
+| Hand-positioned stickies on `create_workflow_from_code` | Coordinates are chosen before layout runs, so the note lands away from the nodes it describes | Pass the nodes to `sticky(content, [nodes])` and let the box be derived. See `references/STICKY_NOTES.md` |
 | `description: "Sends Slack."` | Adds nothing visible from the trigger and Slack node | Include *why* + AI-derived context: "Sends weekly summary to founders. Replaces manual report that kept getting skipped." |
 | Designing fan-out branches as if they execute concurrently | n8n runs fan-out branches sequentially, top-to-bottom by Y-position. Total runtime is the sum of branches, not the max | For real concurrency, dispatch via `Execute Workflow` with `mode: 'each'` + `waitForSubWorkflow: false`. See `n8n-subworkflows-official` "Fire-and-forget parallelization" |
