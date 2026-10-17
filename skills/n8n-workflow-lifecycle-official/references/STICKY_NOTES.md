@@ -33,14 +33,62 @@ Anchors are recorded by node **id**, so renaming a member afterward is safe.
 
 If you cannot name the nodes a note is about, it does not belong on the canvas.
 
+## Where a note goes: pick the role, the role picks the anchors
+
+The anchor set **is** the placement decision, so choosing it at random is what makes a canvas look randomly annotated. There are only three roles, and each fixes its own anchors:
+
+| Role | Anchors | Color | Title |
+|---|---|---|---|
+| **Stage zone** | every node of one stage | what the stage does, below | `### Stage name` |
+| **Callout** | the single node it is about | 3 red for a warning, else 1 yellow | `### Point`, and nothing else: a one-node box is only 160px wide |
+| **Title band** | every node in the flow | 7 gray | `## What this workflow is` |
+
+A title band is the rare one. It only earns its place on a large canvas you are deliberately leaving ungrouped, because a grouped canvas gets its heading from the group names and an ungrouped canvas under 7 boxes already has the workflow name in the breadcrumb. When you do use one, it wraps the whole flow and the stage zones nest inside it, with no care needed on your part: n8n z-orders stickies by area, largest behind, so the band sits behind the zones and both sit behind the nodes.
+
+**A color is a symbol, not decoration.** It stands for what happens in the part of the flow it covers, so a reader can decode the shape of a workflow from color alone. Decide the meaning once and hold it for the whole workflow:
+
+| | |
+|---|---|
+| 4 green | something is created, or a person is in the loop: form intake, approval gate, manual review |
+| 3 red | destructive or irreversible: deletes, error paths, anything that pages a human, critical config |
+| 5 blue | routing and data transformation, the neutral middle of a pipeline |
+| 7 gray | the documentation layer: title band, reference panel |
+| 2 gold | an outer frame |
+| 6 purple | domain accents, sparingly |
+| 1 yellow | the default, a note with no particular role |
+
+**Precedence, highest first: what the user asked for, then the palette already used in nearby workflows (`search_workflows` plus `get_workflow_details`), then the table above.** A convention the reader already knows beats a better one they do not, so never override a stated preference or a visible house style with this default.
+
+## How many, and at what scale
+
+Count boxes the way the grouping rule does: the trigger, each group, and each ungrouped node.
+
+- **Under about 5 nodes.** No stickies. The canvas already reads in one glance, and annotating it is noise.
+- **5 to 7 boxes.** One zone per stage, so 2 to 4 of them, colored by role.
+- **Over 7 boxes.** Node groups do the sectioning (see `NODE_GROUPS.md`) and they do the documenting too, through their own `description`. **Anchor nothing to a grouped node.** When groups exist, layout places collapsed chips and packs members into chip-sized slots, so member positions are cramped (adjacent members can overlap outright) and are not what the reader sees anyway. A sticky anchored to them draws over the group when it is expanded and lines up with nothing when it is collapsed. That leaves stickies almost nothing to do on a grouped canvas, which is correct.
+
+## Giving the zone room
+
+The derived 32px on the sides and bottom measures the node box only. A node's name renders below that box and a subtitle (`GET: https://...`) below the name, so both hang off the bottom edge.
+
+Fix the bottom by declaring a height, which keeps the derived width and the derived position. Node boxes are 96px tall and rows sit 192px apart, so:
+
+| Anchors | Derived height | Declare |
+|---|---|---|
+| all on one row | 224 | `height: 272` |
+| spanning a branch fan, two rows | 416 | `height: 464` |
+
+Each extra row adds 192 to both. The one node taller than 96 is Message an Agent v2 and up, at 128, which raises both numbers by 32.
+
+The sides cannot be fixed the same way, because a declared width keeps the left edge and grows only to the right, eating the gutter to the next zone. If a canvas is worth polishing, widen the zones in a second pass: read the boxes back with `get_workflow_details`, then one `update_workflow` call moving each zone 24px left and adding 48 to its width. That takes the side padding to 56 and leaves a 16px gutter. **56 is the ceiling**, not a preference: the subtitle overhangs the node box by about 45px each side, and dagre's column pitch leaves only 128px between node boxes to split between two paddings and a gutter.
+
 ## The rules that still produce a mess
 
-- **Declared size wins dimension by dimension.** `{ width: 400 }` on an anchored note keeps your width and takes the derived height. Give both and anchoring only positions it. Give neither and it is fully derived, which is almost always what you want.
+- **Declared size wins dimension by dimension.** `{ width: 400 }` on an anchored note keeps your width and takes the derived height. Give both and anchoring only positions it. Give neither and it is fully derived.
 - **A pinned note is never moved, including out of another note's way.** Pinned means it has an explicit `position` *or* anchors. Only free-floating notes get de-overlapped, and that pass pushes them **down past other stickies only**, never past nodes. So a free-floating note can land on top of nodes, and two anchored notes whose anchor sets interleave overlap forever. Anchor each note to a disjoint run.
 - **Stickies are invisible to layout.** Nodes are never spread apart to make room for a note.
-- **A one-node zone is only 160px wide.** Derived width is the anchor's width plus 64, and a plain node is 96 wide. At that width even a short sentence wraps to three or four lines and spills out of the header band onto the node. Give a single-node zone a title and nothing else, or declare a wider `width`. The one-line budget below is a budget *at the zone's width*.
-- **Two zones cannot sit on vertically adjacent rows.** A zone reaches 32px below its anchors and 96px above them, so stacked zones need **128px of clear space between the node boxes**. Dagre stacks sibling branches `NODE_Y_SPACING` apart, which is 96. So giving each branch of an If or Switch its own zone overlaps by exactly 32px, every time, and both are pinned so neither yields. Anchor the whole fan as one zone, or zone one branch and leave the other bare.
-- **Anchor whole stages, not single nodes.** One note per group or stage. A note per node reproduces the node names in a second typeface and buries the one callout that mattered.
+- **Two zones cannot sit on vertically adjacent rows.** A zone reaches 96px above its anchors and 32px below, so stacked zones need **128px of clear space between the node boxes**. Dagre stacks sibling branches `NODE_Y_SPACING` apart, which is 96. So giving each branch of an If or Switch its own zone overlaps by exactly 32px, every time, and both are pinned so neither yields. Anchor the whole fan as one zone, or zone one branch and leave the other bare.
+- **Anchor whole stages, not single nodes.** One zone per stage. A note per node reproduces the node names in a second typeface and buries the one callout that mattered.
 
 ## On update: there is no sticky operation
 
@@ -60,28 +108,17 @@ To frame a run of nodes the way create does, read their positions from `get_work
 
 ## Content, and where the overflow goes
 
-`### Title` on the first line, then one short line. The title carries the point of the callout, not the names of the nodes under it: a reader can already see `Set, If, Set`.
+`###` on the first line for a zone or a callout, `##` for a title band, carrying the point of the note rather than the names of the nodes under it: a reader can already see `Set, If, Set`. Then one short line.
 
-**One line is the whole budget.** Text renders from the note's top-left and only the top 64px clears the anchors, so anything longer renders *behind* the nodes where nobody reads it. The budget is not negotiable by making the note bigger, because a taller box just extends further behind the nodes.
+**One line is the whole budget, and it is a budget at the zone's width.** Text renders from the note's top-left and only the top 64px clears the anchors, so anything longer renders *behind* the nodes where nobody reads it. A taller box does not help: it just extends further behind them. A one-node zone is 160px wide, where even a short sentence wraps three ways, so those get a title and nothing else.
 
-So prose that does not fit goes somewhere else, and n8n has two better places for it:
+Prose that does not fit goes somewhere else, and n8n has two better places for it:
 
-- **Node `notes`** for why one node is configured the way it is. This is the right home for a retry policy, a rate limit, or a workaround.
+- **Node `notes`** for why one node is configured the way it is: a retry policy, a rate limit, a workaround.
 - **The workflow `description`** for why the workflow exists at all.
 
 Neither competes for canvas space, and both survive a reader who never scrolls left.
 
-## Color
-
-| | | | |
-|---|---|---|---|
-| 1 | yellow (default) | 5 | blue |
-| 2 | gold | 6 | purple |
-| 3 | red | 7 | gray |
-| 4 | green | | |
-
-One meaning per color per workflow, and match the palette already used by nearby workflows before inventing one. Color that varies by note rather than by role is noise.
-
 ## Constants
 
-`GRID_SIZE` 16, `DEFAULT_STICKY_SIZE` 240x160, `STICKY_PADDING` 32, `STICKY_HEADER_HEIGHT` 64.
+`GRID_SIZE` 16, `DEFAULT_STICKY_SIZE` 240x160, `STICKY_PADDING` 32, `STICKY_HEADER_HEIGHT` 64, `NODE_Y_SPACING` 96.
