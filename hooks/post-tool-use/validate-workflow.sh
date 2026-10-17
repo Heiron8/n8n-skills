@@ -13,7 +13,7 @@
 # - n8n-subworkflows-official: executeWorkflowTrigger present
 # - n8n-data-tables-official: dataTable present
 # - n8n-credentials-and-security-official: newCredential() OR HTTP OR webhook OR respond
-# - n8n-error-handling-official: webhook OR respond OR scheduleTrigger OR chatTrigger OR agent
+# - n8n-error-handling-official: webhook OR respond OR scheduleTrigger OR chatTrigger OR agent OR messageAnAgent
 # - n8n-workflow-lifecycle-official (readability): more than 6 nodes
 # - n8n-ai-nodes-official: LangChain agent node present
 # - n8n-agents-official: Message an Agent node present
