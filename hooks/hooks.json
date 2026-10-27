@@ -6,7 +6,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh"
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh\"",
+            "commandWindows": "python \"$env:CLAUDE_PLUGIN_ROOT/hooks/codex_hooks.py\" session-start",
+            "timeout": 10
           }
         ]
       }
@@ -17,7 +19,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/pre-tool-use/validate-workflow.sh"
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/pre-tool-use/validate-workflow.sh\"",
+            "commandWindows": "python \"$env:CLAUDE_PLUGIN_ROOT/hooks/codex_hooks.py\" validate-workflow",
+            "timeout": 10
           }
         ]
       },
@@ -26,7 +30,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/pre-tool-use/create-workflow.sh"
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/pre-tool-use/create-workflow.sh\"",
+            "commandWindows": "python \"$env:CLAUDE_PLUGIN_ROOT/hooks/codex_hooks.py\" create-workflow",
+            "timeout": 10
           }
         ]
       },
@@ -35,7 +41,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/pre-tool-use/update-workflow.sh"
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/pre-tool-use/update-workflow.sh\"",
+            "commandWindows": "python \"$env:CLAUDE_PLUGIN_ROOT/hooks/codex_hooks.py\" update-workflow",
+            "timeout": 10
           }
         ]
       },
@@ -44,7 +52,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/pre-tool-use/get-node.sh"
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/pre-tool-use/get-node.sh\"",
+            "commandWindows": "python \"$env:CLAUDE_PLUGIN_ROOT/hooks/codex_hooks.py\" get-node",
+            "timeout": 10
           }
         ]
       },
@@ -53,7 +63,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/pre-tool-use/execute-workflow.sh"
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/pre-tool-use/execute-workflow.sh\"",
+            "commandWindows": "python \"$env:CLAUDE_PLUGIN_ROOT/hooks/codex_hooks.py\" execute-workflow",
+            "timeout": 10
           }
         ]
       },
@@ -62,7 +74,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/pre-tool-use/test-workflow.sh"
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/pre-tool-use/test-workflow.sh\"",
+            "commandWindows": "python \"$env:CLAUDE_PLUGIN_ROOT/hooks/codex_hooks.py\" test-workflow",
+            "timeout": 10
           }
         ]
       },
@@ -71,7 +85,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/pre-tool-use/agent-build.sh"
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/pre-tool-use/agent-build.sh\"",
+            "commandWindows": "python \"$env:CLAUDE_PLUGIN_ROOT/hooks/codex_hooks.py\" agent-build",
+            "timeout": 10
           }
         ]
       },
@@ -80,7 +96,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/pre-tool-use/agent-build.sh"
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/pre-tool-use/agent-build.sh\"",
+            "commandWindows": "python \"$env:CLAUDE_PLUGIN_ROOT/hooks/codex_hooks.py\" agent-build",
+            "timeout": 10
           }
         ]
       }
@@ -91,7 +109,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-tool-use/validate-workflow.sh"
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/post-tool-use/validate-workflow.sh\"",
+            "commandWindows": "python \"$env:CLAUDE_PLUGIN_ROOT/hooks/codex_hooks.py\" post-validate",
+            "timeout": 10
           }
         ]
       }

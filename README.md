@@ -1,5 +1,7 @@
 # Official n8n Skills
 
+> This fork adds Codex hook support for Windows PowerShell. The n8n skill guidance comes from [n8n-io/skills](https://github.com/n8n-io/skills).
+
 <!-- TODO: add 15-second demo gif before the tagline -->
 
 **n8n's MCP makes the connection. n8n Skills set the standard.**
@@ -53,7 +55,7 @@ Inside a `claude` session:
 
 In a terminal:
 
-1. **Add the marketplace.** Run `codex plugin marketplace add n8n-io/skills`.
+1. **Add the marketplace.** Run `codex plugin marketplace add Heiron8/n8n-skills`.
 2. **Install the plugin.** Run `codex plugin add n8n-skills@n8n-io`, then restart Codex and approve the hook-trust prompt (enables the SessionStart, PreToolUse, and PostToolUse reminders).
 3. **Add the MCP server.** Codex can't auto-configure it, so add it once (Codex has no config prompt like Claude Code):
    ```bash
@@ -61,6 +63,22 @@ In a terminal:
    ```
    - No terminal (desktop app only)? Add it in the GUI: **Settings → MCP servers → Add server → Streamable HTTP**, paste the URL, save, then **Restart**.
 4. **Authorize the MCP.** Codex signs in via OAuth on first use, or click **Authenticate** in the MCP servers list.
+
+#### Windows PowerShell hooks in this fork
+
+Use Python 3.11 or later, available as `python` in the PowerShell environment that starts Codex. Check it with `python --version` before installing or restarting Codex.
+
+The Windows hook override uses Python's standard library, so it does not need Bash, jq, or the Windows `python3` alias. Paths containing spaces are supported. On other platforms, the existing Bash handlers remain in use and keep their original dependencies.
+
+After installing or updating this fork, restart Codex, open `/hooks`, and review the changed definitions. Installing the plugin does not grant hook trust. The hooks add advisory context; they do not execute n8n workflows or approve tool calls.
+
+To run the regression tests from a checkout of this fork:
+
+```powershell
+python -B -m unittest discover -s tests -p test_codex_windows_hooks.py -v
+```
+
+The tests exercise startup, resume, clear, compact, reminder state, node warnings, and validation routing. On Windows, they also execute all 10 configured PowerShell commands with synthetic input and paths containing spaces, quotes, and ampersands. PowerShell-specific checks are skipped on other operating systems.
 
 ### OpenCode (CLI)
 
@@ -150,3 +168,4 @@ See [CLAUDE.md](./CLAUDE.md), the contributing guide for humans and AI agents al
 ## License
 
 Apache 2.0. See [LICENSE](./LICENSE).
+
